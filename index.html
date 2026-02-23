@@ -1930,7 +1930,13 @@ async function completeOnboarding() {
   S.onboardingComplete = true;
   await saveUserSettings();
   document.getElementById('onboarding-modal').classList.add('hidden');
-  showToast('Site Initialized.');
+  
+  // Refresh the UI to show the main app
+  updateArchetypeUI && typeof updateArchetypeUI === 'function' ? updateArchetypeUI() : null;
+  renderHabitList(todayStr());
+  renderWeeklyGoals();
+  
+  showToast('⚡ Site Plan commissioned. OS activated.');
   checkTemporalReviews();
 }
 
