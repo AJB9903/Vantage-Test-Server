@@ -1872,25 +1872,39 @@ function obBack(step) { obStep(step - 1); }
 async function initializeSitePlan() {
   const q1 = document.getElementById('survey-q1').value.trim();
   const q2 = document.getElementById('survey-q2').value.trim();
-  if (!q1 || !q2) { document.getElementById('ob-step2-err').textContent = '⚠ Objective and Risk are required.'; return; }
+  if (!q1 || !q2) { 
+    document.getElementById('ob-step2-err').textContent = '⚠ Objective and Risk are required.'; 
+    return; 
+  }
+  
   document.getElementById('ob-step2-err').textContent = '';
   document.getElementById('ob-generate-btn').disabled = true;
   document.getElementById('ob-generating').style.display = 'block';
 
   const prompt = `You are a high-level Strategic Advisor. Analyze this user's objective and risk profile.
 OBJECTIVE: ${q1}
-RISK (ANTI-SELF): ${q2}
+RISK: ${q2}
 
-Return a JSON object with:
-1. "suggestedHabits": List of 3 specific daily habits that target the RISK directly.
-2. "rationale": 2 sentences explaining why these habits prevent self-sabotage.
-3. "monthlyGoalSuggestion": One high-impact target for the current month.
-
-Be direct. No fluff. Use standard professional language.`;
+You must output ONLY a valid, raw JSON object. Do not use markdown. Do not use bold text. Do not include any preamble or postscript. Follow this exact structure:
+{
+  "suggestedHabits": ["Habit 1", "Habit 2", "Habit 3"],
+  "rationale": "Two brutal sentences explaining why.",
+  "monthlyGoalSuggestion": "One specific target"
+}`;
 
   try {
     const raw = await callGroq([{role:'user', content: prompt}], 500, 0.7);
-    const plan = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    
+    // Robust Extraction: Find the brackets and slice the garbage out
+    const jsonStart = raw.indexOf('{');
+    const jsonEnd = raw.lastIndexOf('}');
+    
+    if (jsonStart === -1 || jsonEnd === -1) {
+      throw new Error("AI failed to build structural JSON.");
+    }
+    
+    const cleanData = raw.substring(jsonStart, jsonEnd + 1);
+    const plan = JSON.parse(cleanData);
 
     document.getElementById('ob-suggestions-box').innerHTML = `
       <div class="review-ai-box">
@@ -1905,7 +1919,8 @@ Be direct. No fluff. Use standard professional language.`;
     `;
     obStep(3);
   } catch(e) {
-    document.getElementById('ob-step2-err').textContent = '⚠ AI error: ' + e.message;
+    console.error("Raw AI Output:", e);
+    document.getElementById('ob-step2-err').textContent = '⚠ Parse Error: ' + e.message + ' Try generating again.';
     document.getElementById('ob-generate-btn').disabled = false;
     document.getElementById('ob-generating').style.display = 'none';
   }
