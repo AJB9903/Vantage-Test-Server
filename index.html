@@ -305,6 +305,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .modal-btn-primary:disabled{opacity:.4;cursor:not-allowed}
 .modal-btn-secondary{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:13px 20px;font-family:'Syne',sans-serif;font-size:0.88rem;cursor:pointer;transition:all .15s}
 .modal-btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+/* Archetype cards */
+.archetype-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.archetype-card{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .2s;text-align:left}
+.archetype-card:hover{border-color:#444}
+.archetype-card.selected{border-color:var(--accent);background:rgba(223,255,0,0.04)}
+.archetype-icon{font-size:1.5rem;margin-bottom:8px}
+.archetype-name{font-size:0.85rem;font-weight:700;margin-bottom:4px}
+.archetype-tagline{font-size:0.68rem;color:var(--muted);font-family:'Space Mono',monospace;line-height:1.4}
 /* Survey */
 .survey-field{margin-bottom:16px}
 /* Review modals */
@@ -319,6 +327,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .review-ai-box{background:linear-gradient(135deg,#0d1a00,#000);border:1px solid #1a3a00;border-radius:10px;padding:16px;font-size:0.82rem;line-height:1.7;color:#b0d090;margin-top:12px}
 .review-ai-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:2px;color:var(--accent);font-family:'Space Mono',monospace;margin-bottom:8px}
 .failure-banner{background:#1a0000;border:2px solid var(--red);border-radius:8px;padding:12px 16px;font-family:'Space Mono',monospace;font-size:0.78rem;color:var(--red);font-weight:700;letter-spacing:1px;text-align:center;margin-bottom:16px;animation:critPulse 1.5s infinite}
+/* Archetype badge in sidebar */
+.archetype-badge{font-family:'Space Mono',monospace;font-size:0.58rem;color:var(--accent2);text-transform:uppercase;letter-spacing:2px;margin-top:4px;opacity:.8}
 </style>
 </head>
 <body>
@@ -364,10 +374,12 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="user-badge"><div class="user-email" id="sidebar-email"></div></div>
       <div class="month-badge"><strong id="sidebar-month"></strong><span id="sidebar-day"></span></div>
       <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);text-align:center;margin-top:8px;padding:6px;background:rgba(223,255,0,0.04);border:1px solid rgba(223,255,0,0.15);border-radius:6px" id="sidebar-balance">$V 0</div>
+      <div class="archetype-badge" id="sidebar-archetype" style="text-align:center;margin-top:4px"></div>
       <button class="logout-btn" onclick="handleLogout()">Sign out</button>
     </div>
   </aside>
   <main class="main">
+    <!-- TODAY PAGE -->
     <div class="page active" id="page-today">
       <div class="page-header">
         <div>
@@ -380,17 +392,21 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <div class="save-status" id="auto-save-status"></div>
         </div>
       </div>
+      <!-- ACTIVE BUFFS BAR -->
       <div id="active-buffs-bar" style="display:none;align-items:center;gap:8px;flex-wrap:wrap;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;padding:8px 14px;margin-bottom:12px"></div>
+      <!-- INSOLVENT WARNING -->
       <div class="insolvent-warning" id="insolvent-warning">
         <div class="insolvent-title">⚠ SYSTEM INSOLVENT</div>
         <div class="insolvent-sub">Asset Liquidation Imminent. Complete 1 Habit to Halt.<br>Sustained zero performance will remove your most recently added habit.</div>
       </div>
+      <!-- RECOVERY BOX -->
       <div class="recovery-box" id="recovery-box">
         <div class="recovery-title">✓ RECOVERY COMPLETE</div>
-        <div class="recovery-text">Operational capital restored. Site is back on schedule.<br>Don't let the margin slip again.<br><br>Lost habits can be repurchased in the Store for $V 750 each.</div>
+        <div class="recovery-text">Operational capital restored. Site is back on schedule.<br>Don't let the margin slip again, Aidan.<br><br>Lost habits can be repurchased in the Store for $V 750 each.</div>
       </div>
+      <!-- PROJECT BRIEFING -->
       <div class="briefing-box section-gap" id="briefing-section">
-        <div class="briefing-title">📋 Project Briefing - AI Daily Forecast</div>
+        <div class="briefing-title">📋 Project Briefing — AI Daily Forecast</div>
         <div class="briefing-text" id="briefing-text">Initializing site report...</div>
       </div>
       <div class="grid g4 section-gap">
@@ -410,7 +426,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="card"><div class="card-label">Daily Win</div><input type="text" class="inp" id="inp-win" placeholder="What was today's W?" oninput="triggerAutoSaveDay()"/></div>
       </div>
       <div class="card section-gap">
-        <div class="card-label" style="margin-bottom:14px">Habits - <span id="habit-count-label">0/0</span> <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;margin-left:8px" id="habit-today-vnet"></span></div>
+        <div class="card-label" style="margin-bottom:14px">Habits — <span id="habit-count-label">0/0</span> <span style="font-size:0.6rem;color:var(--muted);font-family:'Space Mono',monospace;margin-left:8px" id="habit-today-vnet"></span></div>
         <div class="habit-list" id="habit-list"></div>
       </div>
       <div class="card section-gap" id="weekly-goals-card">
@@ -419,13 +435,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <span style="font-size:0.65rem;color:var(--muted);font-family:'Space Mono',monospace" id="weekly-goals-week">This week</span>
         </div>
         <div id="weekly-goals-list"></div>
-        <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;display:none" id="no-weekly-goals">No weekly goals set. Add them in Settings.</div>
+        <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;display:none" id="no-weekly-goals">No weekly goals set. Add them in Settings → Goals.</div>
       </div>
       <div class="card section-gap">
         <div class="card-label" style="margin-bottom:12px">Voice / Text Log</div>
         <button class="voice-btn" id="voice-btn" onclick="toggleVoice()">
           <span id="voice-icon">🎙️</span>
-          <span id="voice-label">Tap to record or type below</span>
+          <span id="voice-label">Tap to record - or type below</span>
         </button>
         <div class="transcript-box" id="transcript">Voice log will appear here...</div>
         <textarea class="inp" id="text-log" placeholder="Or type your daily log here..." style="margin-top:8px;min-height:80px;resize:vertical;line-height:1.6" oninput="triggerAutoSaveDay()"></textarea>
@@ -436,6 +452,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="fb-text" id="feedback-text">Log your day and hit analyze. You will get direct feedback on your habits, goals, and trajectory.</div>
       </div>
     </div>
+    <!-- MONTH PAGE -->
     <div class="page" id="page-month">
       <div class="page-header">
         <div><div class="page-title">Month<span>.</span></div><div class="page-sub" id="month-label-header"></div></div>
@@ -453,9 +470,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="card section-gap">
         <div class="goals-header"><div class="card-label">Monthly Goals Progress</div></div>
         <div id="monthly-goals-list"></div>
-        <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;display:none" id="no-monthly-goals">No monthly goals set. Add them in Settings.</div>
+        <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;display:none" id="no-monthly-goals">No monthly goals set. Add them in Settings → Goals.</div>
       </div>
     </div>
+    <!-- CALENDAR PAGE -->
     <div class="page" id="page-calendar">
       <div class="page-header">
         <div><div class="page-title">Calendar<span>.</span></div><div class="page-sub">Tap any day to view or edit</div></div>
@@ -487,12 +505,14 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div class="card section-gap"><div class="card-label" style="margin-bottom:8px">Notes / Log</div><textarea class="inp" id="cal-log" style="min-height:80px;resize:vertical;line-height:1.6" oninput="triggerAutoSaveCalDay()"></textarea></div>
       </div>
     </div>
+    <!-- WINS PAGE -->
     <div class="page" id="page-wins">
       <div class="page-header">
         <div><div class="page-title">Wins<span>.</span></div><div class="page-sub">Every W this month</div></div>
       </div>
       <div id="wins-list"></div>
     </div>
+    <!-- STORE PAGE -->
     <div class="page" id="page-store">
       <div class="page-header">
         <div><div class="page-title">Store<span>.</span></div><div class="page-sub">Vantage Project Procurements</div></div>
@@ -503,9 +523,20 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
       <div id="store-content"></div>
     </div>
+    <!-- SETTINGS PAGE -->
     <div class="page" id="page-settings">
       <div class="page-header">
         <div><div class="page-title">Settings<span>.</span></div><div class="page-sub">Customize your tracker</div></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">Operating Archetype</div>
+        <p style="font-size:0.73rem;color:var(--muted);margin-bottom:10px;line-height:1.6">Changes the language of your entire OS — $V labels, store items, and AI feedback tone.</p>
+        <select class="inp" id="set-archetype" style="width:100%;max-width:300px" onchange="changeArchetype(this.value)">
+          <option value="builder">🏗️ The Builder</option>
+          <option value="founder">🚀 The Founder</option>
+          <option value="operator">⚙️ The Operator</option>
+          <option value="sovereign">👑 The Sovereign</option>
+        </select>
       </div>
       <div class="settings-section">
         <div class="settings-title">Current Month</div>
@@ -531,11 +562,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
           <tr><td><span class="stake-tag stake-crit">CRIT</span></td><td style="color:var(--green);font-family:'Space Mono',monospace">+250</td><td style="color:var(--red);font-family:'Space Mono',monospace">-1,000</td><td style="color:var(--muted)">4:1</td><td style="color:var(--muted);font-size:0.7rem">Non-Negotiable</td></tr>
         </table>
         <div id="habits-editor"></div>
-        <button class="add-btn" onclick="addHabitField()" style="opacity:0.5;cursor:not-allowed;border-color:var(--red);color:var(--red)" title="Habit slots must be purchased in the Store">⛔ Add Habit - Requires $V 2,500 (Store &gt; Habit Slot)</button>
+        <button class="add-btn" onclick="addHabitField()" style="opacity:0.5;cursor:not-allowed;border-color:var(--red);color:var(--red)" title="Habit slots must be purchased in the Store">⛔ Add Habit — Requires $V 2,500 (Store → Habit Slot)</button>
         <div style="margin-top:12px"><button class="save-btn" onclick="saveHabits()">Save Habits &amp; Stakes</button></div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">Goals - Weekly &amp; Monthly</div>
+        <div class="settings-title">Goals — Weekly &amp; Monthly</div>
         <p style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;line-height:1.6">Goals earn $V 500 one-time bonus when completed (10/10). Weekly goals show on Today, monthly on Month page.</p>
         <div id="goals-editor"></div>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
@@ -546,7 +577,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
       <div class="settings-section">
         <div class="settings-title">Groq API Key (free AI feedback)</div>
-        <p style="font-size:0.73rem;color:var(--muted);margin-bottom:10px;line-height:1.6">Get a free key at <strong style="color:var(--text)">console.groq.com</strong>.</p>
+        <p style="font-size:0.73rem;color:var(--muted);margin-bottom:10px;line-height:1.6">Get a free key at <strong style="color:var(--text)">console.groq.com</strong> → API Keys → Create key.</p>
         <input type="password" class="inp" id="set-groq-key" placeholder="gsk_..."/>
         <div style="margin-top:10px"><button class="save-btn" onclick="saveGroqKey()">Save Key</button></div>
       </div>
@@ -562,56 +593,98 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </main>
 </div>
 
+<!-- ═══ ONBOARDING MODAL ═══════════════════════════════════════════ -->
 <div class="modal-overlay" id="onboarding-modal">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-title">SITE INITIALIZATION<span>.</span></div>
-      <div class="modal-sub" id="ob-step-label">Step 1 of 2 - API Key</div>
+      <div class="modal-title">COMMISSIONING<span>.</span></div>
+      <div class="modal-sub" id="ob-step-label">Step 1 of 3 — API Key</div>
       <div class="modal-step-indicator">
         <div class="modal-step-dot active" id="ob-dot-1"></div>
         <div class="modal-step-dot" id="ob-dot-2"></div>
+        <div class="modal-step-dot" id="ob-dot-3"></div>
       </div>
     </div>
     <div class="modal-body">
+      <!-- Step 1: API Key -->
       <div id="ob-step-1">
-        <span class="modal-label">Groq API Key - Required</span>
-        <p class="modal-hint">Go to <strong style="color:var(--text)">console.groq.com</strong>. This is free and powers your AI General Contractor. Without it, the system cannot generate your custom Site Plan.</p>
+        <span class="modal-label">Groq API Key — Required</span>
+        <p class="modal-hint">Go to <strong style="color:var(--text)">console.groq.com</strong> → API Keys → Create key. This is free and powers your AI General Contractor. Without it, the system cannot generate your custom Site Plan.</p>
         <input type="password" class="inp" id="ob-groq-key" placeholder="gsk_..."/>
         <div id="ob-step1-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:6px"></div>
         <div class="modal-actions">
-          <button class="modal-btn-primary" onclick="obNext(1)">Continue - Site Survey</button>
+          <button class="modal-btn-primary" onclick="obNext(1)">Continue → Archetype Selection</button>
         </div>
       </div>
+      <!-- Step 2: Archetype -->
       <div id="ob-step-2" style="display:none">
-        <span class="modal-label">Objective Alignment</span>
-        <p class="modal-hint">Define your target and your risk. The AI will suggest a strategy.</p>
+        <span class="modal-label">Select Your Operating Archetype</span>
+        <p class="modal-hint">Your Archetype defines the language of your OS, the framing of your $V economy, and how the AI addresses your performance data.</p>
+        <div class="archetype-grid" id="archetype-selector">
+          <div class="archetype-card" data-arch="builder" onclick="selectArchetype(this,'builder')">
+            <div class="archetype-icon">🏗️</div>
+            <div class="archetype-name">The Builder</div>
+            <div class="archetype-tagline">Site Profit · Liquidated Damages · % Mobilized</div>
+          </div>
+          <div class="archetype-card" data-arch="founder" onclick="selectArchetype(this,'founder')">
+            <div class="archetype-icon">🚀</div>
+            <div class="archetype-name">The Founder</div>
+            <div class="archetype-tagline">Growth Metric · Burn Rate · % to Series A</div>
+          </div>
+          <div class="archetype-card" data-arch="operator" onclick="selectArchetype(this,'operator')">
+            <div class="archetype-icon">⚙️</div>
+            <div class="archetype-name">The Operator</div>
+            <div class="archetype-tagline">System Uptime · SLA Breach · % Efficiency</div>
+          </div>
+          <div class="archetype-card" data-arch="sovereign" onclick="selectArchetype(this,'sovereign')">
+            <div class="archetype-icon">👑</div>
+            <div class="archetype-name">The Sovereign</div>
+            <div class="archetype-tagline">Legacy Gain · Territory Loss · % Sovereignty</div>
+          </div>
+        </div>
+        <div id="ob-step2-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:8px"></div>
+        <div class="modal-actions">
+          <button class="modal-btn-secondary" onclick="obBack(2)">← Back</button>
+          <button class="modal-btn-primary" onclick="obNext(2)">Continue → Site Survey</button>
+        </div>
+      </div>
+      <!-- Step 3: Site Survey -->
+      <div id="ob-step-3" style="display:none">
+        <span class="modal-label">Site Survey — 4 Questions</span>
+        <p class="modal-hint">Your answers are sent to the AI to generate a custom Site Plan: 5 habits, 2 weekly goals, and 1 monthly goal tailored to your archetype.</p>
         <div class="survey-field">
-          <label class="modal-label">Objective - Primary scale target?</label>
+          <label class="modal-label">Objective — Primary build/scale target?</label>
           <textarea class="inp" id="survey-q1" rows="2" placeholder="e.g. Launch MVP by Q2, hit $10k MRR..."></textarea>
         </div>
         <div class="survey-field">
-          <label class="modal-label">Risk - Your 'Anti-Self' behavior (the leak)?</label>
+          <label class="modal-label">Risk — Your 'Anti-Self' behavior (the leak)?</label>
           <textarea class="inp" id="survey-q2" rows="2" placeholder="e.g. I self-sabotage by distraction when progress gets real..."></textarea>
         </div>
-        <div id="ob-step2-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:4px"></div>
+        <div class="survey-field">
+          <label class="modal-label">Capital — What keeps you solvent?</label>
+          <textarea class="inp" id="survey-q3" rows="2" placeholder="e.g. Proving to myself I can execute consistently..."></textarea>
+        </div>
+        <div class="survey-field">
+          <label class="modal-label">Transparency — What are you avoiding being honest about?</label>
+          <textarea class="inp" id="survey-q4" rows="2" placeholder="e.g. That I haven't been training consistently for months..."></textarea>
+        </div>
+        <div id="ob-step3-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:4px"></div>
         <div id="ob-generating" style="display:none;font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--accent2);padding:12px;background:#001a10;border:1px solid #1a3a2a;border-radius:8px;margin-top:12px">
-          <span class="spinner"></span>AI Strategic Advisor generating your suggestions...
+          <span class="spinner"></span>AI General Contractor generating your Site Plan...
         </div>
         <div class="modal-actions">
-          <button class="modal-btn-secondary" onclick="obBack(2)">← Back</button>
-          <button class="modal-btn-primary" id="ob-generate-btn" onclick="initializeSitePlan()">Generate Site Strategy</button>
+          <button class="modal-btn-secondary" onclick="obBack(3)">← Back</button>
+          <button class="modal-btn-primary" id="ob-generate-btn" onclick="initializeSitePlan()">Generate Site Plan →</button>
         </div>
-      </div>
-      <div id="ob-step-3" style="display:none">
-        <span class="modal-label">Site Strategy Generated</span>
-        <div id="ob-suggestions-box"></div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- ═══ WEEKLY REVIEW MODAL ══════════════════════════════════════════ -->
 <div class="modal-overlay hidden" id="weekly-review-modal">
   <div class="modal-box wide">
+    <button class="modal-close" onclick="closeReviewModal('weekly-review-modal')">✕ Close</button>
     <div class="modal-header">
       <div class="modal-title">Weekly<span> Review.</span></div>
       <div class="modal-sub">7-Day Performance Debrief</div>
@@ -622,8 +695,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </div>
 </div>
 
+<!-- ═══ MONTHLY RECAP MODAL ══════════════════════════════════════════ -->
 <div class="modal-overlay hidden" id="monthly-recap-modal">
   <div class="modal-box wide">
+    <button class="modal-close" onclick="closeReviewModal('monthly-recap-modal')">✕ Close</button>
     <div class="modal-header">
       <div class="modal-title">Monthly<span> Recap.</span></div>
       <div class="modal-sub" id="monthly-recap-sub">30-Day Strategic Assessment</div>
@@ -649,7 +724,67 @@ const STAKES = {
   critical: { earn: 250, penalty: 1000, label: 'CRIT', cls: 'stake-crit' }
 };
 
+
+// ─── ARCHETYPE TERMINOLOGY ────────────────────────────────────────────────────
+const TERMINOLOGY = {
+  builder: {
+    name: 'The Builder',
+    icon: '🏗️',
+    profitLabel: 'Site Profit',
+    lossLabel: 'Liquidated Damages',
+    progressLabel: '% Mobilized',
+    briefingTone: 'construction site general contractor. Use terms like site margin, mobilization, build schedule, liquidated damages, and project status.',
+    rewards: [
+      { id: 'fuel_upgrade',      name: 'Fuel Upgrade',       emoji: '⚡' },
+      { id: 'stakeholder_bonus', name: 'Stakeholder Dinner',  emoji: '🥂' },
+      { id: 'solo_trip',         name: 'Solo Recon Trip',     emoji: '✈️' },
+    ]
+  },
+  founder: {
+    name: 'The Founder',
+    icon: '🚀',
+    profitLabel: 'Growth Metric',
+    lossLabel: 'Burn Rate',
+    progressLabel: '% to Series A',
+    briefingTone: 'ruthless startup advisor. Use terms like burn rate, runway, growth velocity, product-market fit, and investor pressure.',
+    rewards: [
+      { id: 'unfiltered_hour',   name: 'Deep Work Sprint',         emoji: '🧠' },
+      { id: 'stakeholder_bonus', name: 'Investor Networking',       emoji: '🤝' },
+      { id: 'solo_trip',         name: 'Product Launch Offsite',    emoji: '🚀' },
+    ]
+  },
+  operator: {
+    name: 'The Operator',
+    icon: '⚙️',
+    profitLabel: 'System Uptime',
+    lossLabel: 'SLA Breach',
+    progressLabel: '% Efficiency',
+    briefingTone: 'high-stakes operations director. Use terms like SLA compliance, system uptime, capacity, throughput, and process efficiency.',
+    rewards: [
+      { id: 'fuel_upgrade',      name: 'System Patch',          emoji: '🔧' },
+      { id: 'performance_tech',  name: 'Capacity Expansion',    emoji: '📈' },
+      { id: 'deep_work_env',     name: 'Global Infrastructure', emoji: '🌐' },
+    ]
+  },
+  sovereign: {
+    name: 'The Sovereign',
+    icon: '👑',
+    profitLabel: 'Legacy Gain',
+    lossLabel: 'Territory Loss',
+    progressLabel: '% Sovereignty',
+    briefingTone: 'sovereign legacy advisor. Use terms like territory, legacy capital, sphere of influence, dominion, and long-game positioning.',
+    rewards: [
+      { id: 'unfiltered_hour',   name: 'Freedom Token',       emoji: '🕊️' },
+      { id: 'solo_trip',         name: 'Territory Expansion',  emoji: '🗺️' },
+      { id: 'deep_work_env',     name: 'Legacy Retreat',       emoji: '🏰' },
+    ]
+  }
+};
+function getTerm() { return TERMINOLOGY[S.archetype] || TERMINOLOGY.builder; }
+
 // ─── STORE ITEMS ──────────────────────────────────────────────────────────────
+// consumable = goes to inventory, activatable with USE button
+// infra/large = permanent one-time effects
 const BASE_STORE_ITEMS = [
   { id: 'unfiltered_hour', name: 'Unfiltered Hour', desc: '60 mins of guilt-free dopamine. No tracking, no accountability.', basePrice: 500, tier: 'consumable', emoji: '🎮', buffLabel: 'UNFILTERED HOUR ACTIVE', buffColor: '#f472b6' },
   { id: 'fuel_upgrade', name: 'Fuel Upgrade', desc: 'Unlocks a premium meal or high-performance caffeine protocol.', basePrice: 750, tier: 'consumable', emoji: '⚡', buffLabel: 'FUEL PROTOCOL ACTIVE', buffColor: '#fbbf24' },
@@ -682,10 +817,12 @@ let S = {
   goals: [],
   groqKey: '',
   days: {},
-  onboardingComplete: false,
-  lastWeeklyReview: null,
-  lastMonthlyRecap: null,
-  nonNegotiableGoal: { name: '', status: 'pending', setDate: null },
+  // Identity
+  archetype: 'builder',         // builder | founder | operator | sovereign
+  onboardingComplete: false,    // false = show commissioning modal
+  lastWeeklyReview: null,       // ISO date string
+  lastMonthlyRecap: null,       // ISO date string
+  // $V Economy
   vBalance: 0,
   lifetimeEarned: 0,
   multiplierCount: 0,
@@ -695,6 +832,7 @@ let S = {
   liquidatedHabits: [],
   purchases: [],
   goalBonusGiven: {},
+  // Inventory system
   inventory: {},
   activeBuffs: {},
 };
@@ -703,7 +841,6 @@ let authMode = 'login';
 let calViewMonth = new Date().getMonth()+1;
 let calViewYear = new Date().getFullYear();
 let calSelectedDate = null;
-window._tempMonthlyStats = null;
 
 // ─── AUTO-SAVE ────────────────────────────────────────────────────────────────
 let saveTimeout, saveCalTimeout;
@@ -745,11 +882,18 @@ function showToast(msg, dur=2200, negative=false) {
 }
 
 // ─── INFLATION & STAKES MATH ──────────────────────────────────────────────────
-function getInflationFactor() { return 1 + Math.floor((S.lifetimeEarned || 0) / 1000) * 0.05; }
-function getInflatedPrice(basePrice) { return Math.round(basePrice * getInflationFactor()); }
+function getInflationFactor() {
+  // +5% per 1000 lifetime $V earned
+  return 1 + Math.floor((S.lifetimeEarned || 0) / 1000) * 0.05;
+}
+function getInflatedPrice(basePrice) {
+  return Math.round(basePrice * getInflationFactor());
+}
 function getStakeEarn(stake) {
   const base = STAKES[stake]?.earn || 40;
-  if (stake === 'critical') return Math.round(base * (1 + (S.multiplierCount || 0) * 0.10));
+  if (stake === 'critical') {
+    return Math.round(base * (1 + (S.multiplierCount || 0) * 0.10));
+  }
   return base;
 }
 function getStakePenalty(stake) {
@@ -769,6 +913,7 @@ function deductVBalance(amount) {
   S.vBalance = Math.max(0, S.vBalance - amount);
   updateVDisplay();
 }
+
 function checkContractSigning() {
   if (!S.contractSigned && S.lifetimeEarned >= 500) {
     S.contractSigned = true;
@@ -784,56 +929,83 @@ function checkRecovery() {
     showToast('✓ RECOVERY COMPLETE. Operational capital restored.', 4000);
   }
 }
+
 function updateVDisplay() {
   const bal = S.vBalance || 0;
   const balStr = `$V ${bal.toLocaleString()}`;
+  // Today page
   const todayBal = document.getElementById('today-v-balance');
   if (todayBal) {
     todayBal.textContent = balStr;
     todayBal.className = 'v-balance-display' + (S.contractSigned && bal === 0 ? ' insolvent' : '');
   }
+  // Store page
   const storeBal = document.getElementById('store-v-balance');
   if (storeBal) storeBal.textContent = balStr;
+  // Sidebar
   const sidebarBal = document.getElementById('sidebar-balance');
   if (sidebarBal) sidebarBal.textContent = balStr;
 
+  // Status tag
   renderStatusTag();
+  // Insolvent warning
   const warning = document.getElementById('insolvent-warning');
-  if (warning) warning.classList.toggle('visible', S.contractSigned && bal === 0);
+  if (warning) {
+    warning.classList.toggle('visible', S.contractSigned && bal === 0);
+  }
+  // Recovery
   const recBox = document.getElementById('recovery-box');
-  if (recBox && S.hasBeenLiquidated && S.recoveryNotified) recBox.classList.add('visible');
+  if (recBox && S.hasBeenLiquidated && S.recoveryNotified) {
+    recBox.classList.add('visible');
+  }
 }
 
 function renderStatusTag() {
   const el = document.getElementById('today-status-tag');
   if (!el) return;
-  if (!S.contractSigned) el.innerHTML = '<span class="status-tag status-pre">STATUS: PRE-CONSTRUCTION (PROBATIONARY)</span>';
-  else if (S.vBalance === 0) el.innerHTML = '<span class="status-tag status-insolvent">STATUS: INSOLVENT</span>';
-  else el.innerHTML = '<span class="status-tag status-operational">STATUS: OPERATIONAL</span>';
+  if (!S.contractSigned) {
+    el.innerHTML = '<span class="status-tag status-pre">STATUS: PRE-CONSTRUCTION (PROBATIONARY)</span>';
+  } else if (S.vBalance === 0) {
+    el.innerHTML = '<span class="status-tag status-insolvent">STATUS: INSOLVENT</span>';
+  } else {
+    el.innerHTML = '<span class="status-tag status-operational">STATUS: OPERATIONAL</span>';
+  }
 }
 
 // ─── EOD PENALTIES & LIQUIDATION ─────────────────────────────────────────────
 async function applyEodPenalties(dk) {
   const eodKey = `eod_applied_${dk}`;
   if (localStorage.getItem(eodKey)) return;
+
   const day = S.days[dk] || {};
   const completedHabits = day.habits || {};
   let totalPenalty = 0;
+  const penalized = [];
+
   S.habits.forEach(h => {
     if (!completedHabits[h]) {
       const stake = S.habitStakes[h] || 'medium';
-      totalPenalty += getStakePenalty(stake);
+      const pen = getStakePenalty(stake);
+      totalPenalty += pen;
+      penalized.push(h);
     }
   });
-  if (totalPenalty > 0 && S.contractSigned) deductVBalance(totalPenalty);
+
+  if (totalPenalty > 0 && S.contractSigned) {
+    deductVBalance(totalPenalty);
+    console.log(`EOD penalties for ${dk}: -$V ${totalPenalty} (${penalized.length} habits missed)`);
+  }
   localStorage.setItem(eodKey, 'true');
 }
 
 async function checkLiquidation() {
   if (!S.contractSigned) return;
   if (S.vBalance > 0) return;
+
   const liqKey = `liquidation_checked_${todayStr()}`;
   if (localStorage.getItem(liqKey)) return;
+
+  // Check yesterday's completions
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yk = yesterday.toISOString().split('T')[0];
@@ -869,14 +1041,15 @@ function setupEodTimer() {
   const tenPM = new Date();
   tenPM.setHours(22, 0, 0, 0);
   const eodWarnKey = `eod_warned_${todayStr()}`;
+
   if (now >= tenPM && !localStorage.getItem(eodWarnKey)) {
-    showToast('⚠ 22:00 - Incomplete habits flagged as Breach of Contract.', 5000, true);
+    showToast('⚠ 22:00 — Incomplete habits flagged as Breach of Contract.', 5000, true);
     localStorage.setItem(eodWarnKey, 'true');
   } else if (now < tenPM) {
     const msUntil = tenPM - now;
     setTimeout(() => {
       if (!localStorage.getItem(eodWarnKey)) {
-        showToast('⚠ 22:00 - Incomplete habits flagged as Breach of Contract.', 5000, true);
+        showToast('⚠ 22:00 — Incomplete habits flagged as Breach of Contract.', 5000, true);
         localStorage.setItem(eodWarnKey, 'true');
       }
     }, msUntil);
@@ -921,8 +1094,9 @@ async function handleAuth() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Working...';
   try {
     let res;
-    if (authMode==='login') res = await sb.auth.signInWithPassword({email, password:pw});
-    else {
+    if (authMode==='login') {
+      res = await sb.auth.signInWithPassword({email, password:pw});
+    } else {
       res = await sb.auth.signUp({email, password:pw});
       if (res.data?.user && !res.error) {
         err.style.color = 'var(--green)';
@@ -959,30 +1133,47 @@ async function initApp() {
   await checkNewDay();
   updateSidebar();
   updateVDisplay();
+  updateArchetypeUI();
   initToday(todayStr());
   calViewMonth = S.month; calViewYear = S.year;
   setupEodTimer();
-  if (!S.onboardingComplete) showOnboarding();
-  else checkTemporalReviews();
+  // Commissioning: show onboarding for new users
+  if (!S.onboardingComplete) {
+    showOnboarding();
+  } else {
+    // Temporal reviews for returning users
+    checkTemporalReviews();
+  }
 }
 
 // ─── SUPABASE DATA ────────────────────────────────────────────────────────────
 async function loadUserSettings() {
   const {data} = await sb.from('user_settings').select('*').eq('user_id', currentUser.id).single();
   if (data) {
-    if (data.habits && Array.isArray(data.habits) && data.habits.length > 0) S.habits = data.habits;
+    // HARD GUARD: Supabase is always the source of truth.
+    // Never allow DEFAULT_HABITS to overwrite a returning user's saved array.
+    if (data.habits && Array.isArray(data.habits) && data.habits.length > 0) {
+      S.habits = data.habits;
+    }
+    // BLOAT GUARD: If the user has more than 5 habits but has never purchased
+    // a habit slot (multiplierCount and purchases give us the signal), truncate
+    // back to Core 5. This kills January legacy bloat.
+    // We check purchases after meta loads, so we do a post-meta pass below.
+
     if (data.goals) {
-      try { S.goals = typeof data.goals==='string' ? JSON.parse(data.goals) : data.goals; if (!Array.isArray(S.goals)) S.goals = []; }
-      catch(e) { S.goals = []; }
+      try {
+        S.goals = typeof data.goals==='string' ? JSON.parse(data.goals) : data.goals;
+        if (!Array.isArray(S.goals)) S.goals = [];
+      } catch(e) { S.goals = []; }
     } else { S.goals = []; }
 
     if (data.meta) {
       const meta = typeof data.meta==='string' ? JSON.parse(data.meta) : data.meta;
       S.vBalance          = meta.vBalance          || 0;
+      S.archetype         = meta.archetype         || 'builder';
       S.onboardingComplete= meta.onboardingComplete|| false;
       S.lastWeeklyReview  = meta.lastWeeklyReview  || null;
       S.lastMonthlyRecap  = meta.lastMonthlyRecap  || null;
-      S.nonNegotiableGoal = meta.nonNegotiableGoal || { name: '', status: 'pending', setDate: null };
       S.lifetimeEarned    = meta.lifetimeEarned    || 0;
       S.multiplierCount   = meta.multiplierCount   || 0;
       S.contractSigned    = meta.contractSigned    || false;
@@ -993,29 +1184,41 @@ async function loadUserSettings() {
       S.goalBonusGiven    = meta.goalBonusGiven    || {};
       S.inventory         = meta.inventory         || {};
 
+      // STAKES SYNC: always pull from meta. Fall back to DEFAULT_HABIT_STAKES
+      // so Core 5 always have correct stakes on accounts that predate this field.
       const savedStakes = meta.habitStakes || {};
-      S.habitStakes = Object.keys(savedStakes).length > 0 ? savedStakes : { ...DEFAULT_HABIT_STAKES };
+      S.habitStakes = Object.keys(savedStakes).length > 0
+        ? savedStakes
+        : { ...DEFAULT_HABIT_STAKES };
+
+      // Purge buffs that expired (not dated today)
       const today = todayStr();
       const rawBuffs = meta.activeBuffs || {};
       S.activeBuffs = {};
       Object.entries(rawBuffs).forEach(([id, exp]) => { if (exp === today) S.activeBuffs[id] = exp; });
 
+      // BLOAT TRUNCATION: If habits array exceeds Core 5 and zero habit slots
+      // have ever been purchased, strip back to Core 5. Detects by checking
+      // whether any purchase record contains "Habit Slot" text.
       const hasSlotPurchase = (S.purchases || []).some(p => p.item && p.item.includes('Habit Slot'));
       if (S.habits.length > 5 && !hasSlotPurchase) {
         S.habits = [...DEFAULT_HABITS];
         S.habitStakes = { ...DEFAULT_HABIT_STAKES };
       }
-    } else { S.habitStakes = { ...DEFAULT_HABIT_STAKES }; }
-  } else { S.nonNegotiableGoal = { name: '', status: 'pending', setDate: null }; }
+    } else {
+      // No meta record yet — seed default stakes for brand-new accounts
+      S.habitStakes = { ...DEFAULT_HABIT_STAKES };
+    }
+  }
 }
 
 async function saveUserSettings() {
   const meta = {
     vBalance: S.vBalance || 0,
+    archetype: S.archetype || 'builder',
     onboardingComplete: S.onboardingComplete || false,
     lastWeeklyReview: S.lastWeeklyReview || null,
     lastMonthlyRecap: S.lastMonthlyRecap || null,
-    nonNegotiableGoal: S.nonNegotiableGoal || { name: '', status: 'pending', setDate: null },
     lifetimeEarned: S.lifetimeEarned || 0,
     multiplierCount: S.multiplierCount || 0,
     contractSigned: S.contractSigned || false,
@@ -1029,7 +1232,11 @@ async function saveUserSettings() {
     activeBuffs: S.activeBuffs || {},
   };
   await sb.from('user_settings').upsert({
-    user_id: currentUser.id, habits: S.habits, goals: Array.isArray(S.goals) ? S.goals : [], meta: meta, updated_at: new Date().toISOString()
+    user_id: currentUser.id,
+    habits: S.habits,
+    goals: Array.isArray(S.goals) ? S.goals : [],
+    meta: meta,
+    updated_at: new Date().toISOString()
   }, {onConflict: 'user_id'});
 }
 
@@ -1039,13 +1246,22 @@ async function loadMonthLogs() {
   const {data} = await sb.from('logs').select('*').eq('user_id', currentUser.id).gte('date',from).lte('date',to);
   S.days = {};
   if (data) data.forEach(row => {
-    S.days[row.date] = { habits: row.habits||{}, mood: row.mood||7, weight: row.weight, cals: row.calories, protein: row.protein, sleep: row.sleep, win: row.win||'', log: row.log_text||'' };
+    S.days[row.date] = {
+      habits: row.habits||{}, mood: row.mood||7, weight: row.weight,
+      cals: row.calories, protein: row.protein, sleep: row.sleep,
+      win: row.win||'', log: row.log_text||''
+    };
   });
 }
 
 async function saveDayToDB(dk, dayData) {
   await sb.from('logs').upsert({
-    user_id: currentUser.id, date: dk, mood: dayData.mood, weight: dayData.weight, calories: dayData.cals, protein: dayData.protein, sleep: dayData.sleep, win: dayData.win, log_text: dayData.log, habits: dayData.habits, updated_at: new Date().toISOString()
+    user_id: currentUser.id, date: dk,
+    mood: dayData.mood, weight: dayData.weight,
+    calories: dayData.cals, protein: dayData.protein,
+    sleep: dayData.sleep, win: dayData.win,
+    log_text: dayData.log, habits: dayData.habits,
+    updated_at: new Date().toISOString()
   }, {onConflict: 'user_id,date'});
 }
 
@@ -1076,20 +1292,26 @@ function initToday(dk) {
   document.getElementById('text-log').value = d.log||'';
   const now = new Date();
   document.getElementById('today-date-label').textContent = now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  renderHabitList(dk); renderWeeklyGoals(); updateVDisplay(); renderBuffBar(); generateBriefing();
+  renderHabitList(dk);
+  renderWeeklyGoals();
+  updateVDisplay();
+  renderBuffBar();
+  generateBriefing();
 }
 
 function renderHabitList(dk) {
   const d = getDay(dk);
   const list = document.getElementById('habit-list');
   list.innerHTML = '';
-  let done = 0, potentialEarn = 0, potentialLoss = 0;
+  let done = 0;
+  let potentialEarn = 0, potentialLoss = 0;
   S.habits.forEach(h => {
     const checked = d.habits[h] || false;
     const stake = S.habitStakes[h] || 'medium';
     const stakeInfo = STAKES[stake];
     if (checked) done++;
-    const earn = getStakeEarn(stake), pen = getStakePenalty(stake);
+    const earn = getStakeEarn(stake);
+    const pen = getStakePenalty(stake);
     if (!checked) potentialLoss += pen; else potentialEarn += earn;
 
     const el = document.createElement('div');
@@ -1102,7 +1324,9 @@ function renderHabitList(dk) {
       </div>
       <div class="habit-right">
         <span class="stake-tag ${stakeInfo.cls}">${stakeInfo.label}</span>
-        <span style="font-size:0.62rem;font-family:'Space Mono',monospace;color:${checked?'var(--green)':'var(--muted)'}">${checked ? '+$V '+earn : '-$V '+pen}</span>
+        <span style="font-size:0.62rem;font-family:'Space Mono',monospace;color:${checked?'var(--green)':'var(--muted)'}">
+          ${checked ? '+$V '+earn : '-$V '+pen}
+        </span>
       </div>
     `;
     list.appendChild(el);
@@ -1117,20 +1341,27 @@ function renderHabitList(dk) {
 
 async function toggleHabit(dk, h, listId, refresh) {
   if (!S.days[dk]) S.days[dk] = getDay(dk);
-  S.days[dk].habits[h] = !S.days[dk].habits[h];
+  const wasDone = S.days[dk].habits[h] || false;
+  S.days[dk].habits[h] = !wasDone;
   const nowDone = S.days[dk].habits[h];
 
   if (dk === todayStr()) {
     const stake = S.habitStakes[h] || 'medium';
     if (nowDone) {
-      const earn = getStakeEarn(stake); addVBalance(earn, h); showToast(`+$V ${earn} - ${h}`);
+      const earn = getStakeEarn(stake);
+      addVBalance(earn, h);
+      showToast(`+$V ${earn} — ${h}`);
     } else {
-      const pen = getStakePenalty(stake); deductVBalance(pen); showToast(`-$V ${pen} - ${h} unchecked`, 2200, true);
+      const pen = getStakePenalty(stake);
+      deductVBalance(pen);
+      showToast(`-$V ${pen} — ${h} unchecked`, 2200, true);
     }
     await saveUserSettings();
   }
+
   await saveDayToDB(dk, S.days[dk]);
-  if (refresh) refresh(); else renderHabitList(dk);
+  if (refresh) refresh();
+  else renderHabitList(dk);
 }
 
 async function saveDay() {
@@ -1151,41 +1382,56 @@ async function saveDay() {
 async function generateBriefing() {
   const briefingEl = document.getElementById('briefing-text');
   if (!briefingEl) return;
+
   const cacheKey = `vantage_briefing_${todayStr()}`;
   const cached = localStorage.getItem(cacheKey);
   if (cached) { briefingEl.textContent = cached; return; }
-  if (!S.groqKey) { briefingEl.innerHTML = '<em style="color:var(--muted)">Add a Groq API key in Settings to enable AI Project Briefings.</em>'; return; }
+
+  if (!S.groqKey) {
+    briefingEl.innerHTML = '<em style="color:var(--muted)">Add a Groq API key in Settings to enable AI Project Briefings.</em>';
+    return;
+  }
+
   briefingEl.textContent = 'Compiling site report...';
+
   const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
   const yk = yesterday.toISOString().split('T')[0];
   const yday = S.days[yk];
   const doneHabits = yday ? S.habits.filter(h => yday.habits[h]) : [];
   const missedHabits = yday ? S.habits.filter(h => !yday.habits[h]) : [...S.habits];
-  const missedStrategic = missedHabits.filter(h => { const s = S.habitStakes[h] || 'medium'; return s === 'high' || s === 'critical'; });
+  const missedStrategic = missedHabits.filter(h => {
+    const s = S.habitStakes[h] || 'medium';
+    return s === 'high' || s === 'critical';
+  });
   const netLoss = missedStrategic.length > 0;
   const weeklyGoals = S.goals.filter(g => g.type==='weekly').map(g => `${g.name} @ ${g.progress||0}/10`).join(', ') || 'none set';
   const potentialToday = S.habits.reduce((acc, h) => acc + getStakeEarn(S.habitStakes[h] || 'medium'), 0);
 
-  const prompt = `You are a brutally honest strategic advisor.
-Generate a 2-3 sentence "Project Briefing" for the start of today.
+  const term = getTerm();
+  const prompt = `You are VANTAGE AI — a ${term.briefingTone}.
+Generate a 2-3 sentence "Project Briefing" for the start of today using ${term.name} language.
 
 Yesterday's data:
-- Habits completed: ${doneHabits.length}/${S.habits.length} - ${doneHabits.join(', ') || 'NONE'}
+- Habits completed: ${doneHabits.length}/${S.habits.length} — ${doneHabits.join(', ') || 'NONE'}
 - Missed habits: ${missedHabits.join(', ') || 'none'}
 - Strategic/Critical failures: ${missedStrategic.join(', ') || 'none'}
-- Site status: ${netLoss ? 'NET LOSS - strategic breaches override baseline wins' : doneHabits.length > 0 ? 'NET POSITIVE' : 'ZERO OUTPUT'}
+- Site status: ${netLoss ? 'NET LOSS — strategic breaches override baseline wins' : doneHabits.length > 0 ? 'NET POSITIVE' : 'ZERO OUTPUT'}
 - Current $V balance: ${S.vBalance}
 - Weekly goals: ${weeklyGoals}
 - Today's $V potential if all habits hit: +$V ${potentialToday}
 
-Write a direct site briefing: assess yesterday's execution, state today's $V profit potential, and call out any strategic risk. Max 55 words. No fluff.`;
+Write a direct site briefing: assess yesterday's execution, state today's $V profit potential, and call out any strategic risk. Use terms like "site margin," "$V," "execution risk," "breach." Max 55 words. No fluff.`;
+
   try {
     const text = await callGroq([{role:'user',content:prompt}], 130, 0.75);
-    briefingEl.textContent = text; localStorage.setItem(cacheKey, text);
-  } catch(e) { briefingEl.textContent = 'Briefing unavailable: ' + e.message; }
+    briefingEl.textContent = text;
+    localStorage.setItem(cacheKey, text);
+  } catch(e) {
+    briefingEl.textContent = 'Briefing unavailable: ' + e.message;
+  }
 }
 
-// ─── GOALS ────────────────────────────────────────────────────────────────────
+// ─── WEEKLY GOALS ─────────────────────────────────────────────────────────────
 function renderWeeklyGoals() {
   const now = new Date();
   const dayOfWeek = now.getDay();
@@ -1218,10 +1464,12 @@ function buildGoalItem(g, interactive) {
   el.className = 'goal-item ' + urgencyItemClass(urg.level);
   el.dataset.goalId = g.id;
   let deadlineBadge = '';
-  if (g.deadline) deadlineBadge = `<span class="goal-deadline ${deadlineBadgeClass(urg.cls)}">${urg.label}</span>`;
+  if (g.deadline) {
+    deadlineBadge = `<span class="goal-deadline ${deadlineBadgeClass(urg.cls)}">${urg.label}</span>`;
+  }
   let countdown = '';
   if (g.deadline && urg.days!==null && urg.days<=7) {
-    countdown = `<div class="goal-countdown ${countdownClass(urg.cls)}">${urg.level===4?'⚠ Overdue by '+Math.abs(urg.days)+' day(s)':urg.label+' - '+new Date(g.deadline+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`;
+    countdown = `<div class="goal-countdown ${countdownClass(urg.cls)}">${urg.level===4?'⚠ Overdue by '+Math.abs(urg.days)+' day(s)':urg.label+' — '+new Date(g.deadline+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`;
   }
   const bonusTag = S.goalBonusGiven[g.id] ? '<span style="font-size:0.6rem;font-family:\'Space Mono\',monospace;color:var(--accent);margin-left:6px">+$V500 ✓</span>' : '';
   el.innerHTML = `
@@ -1242,16 +1490,23 @@ function buildGoalItem(g, interactive) {
 
 function updateGoalProgress(id, val, scoreEl) {
   if (scoreEl) scoreEl.textContent = val+'/10';
-  const g = S.goals.find(x => x.id===id); if (g) g.progress = parseInt(val);
+  const g = S.goals.find(x => x.id===id);
+  if (g) g.progress = parseInt(val);
 }
+
 async function persistGoalProgress(id, val) {
   const g = S.goals.find(x => x.id===id);
   if (g) {
-    const prev = g.progress || 0; g.progress = parseInt(val);
+    const prev = g.progress || 0;
+    g.progress = parseInt(val);
     if (parseInt(val)===10 && prev<10 && !S.goalBonusGiven[id]) {
-      S.goalBonusGiven[id] = true; addVBalance(500, `Goal complete: ${g.name}`); await saveUserSettings();
-      showToast(`🎯 GOAL COMPLETE: +$V 500 - ${g.name}`, 3500);
-    } else { await saveUserSettings(); }
+      S.goalBonusGiven[id] = true;
+      addVBalance(500, `Goal complete: ${g.name}`);
+      await saveUserSettings();
+      showToast(`🎯 GOAL COMPLETE: +$V 500 — ${g.name}`, 3500);
+    } else {
+      await saveUserSettings();
+    }
   }
 }
 
@@ -1270,10 +1525,11 @@ function toggleVoice() {
       else interim+=e.results[i][0].transcript;
     }
     const box = document.getElementById('transcript');
-    box.textContent = (final||interim)||'Listening...'; box.classList.toggle('has-text', !!(final||interim));
+    box.textContent = (final||interim)||'Listening...';
+    box.classList.toggle('has-text', !!(final||interim));
     if (final) { const ta=document.getElementById('text-log'); ta.value=(ta.value?ta.value+' ':'')+final; triggerAutoSaveDay(); }
   };
-  recognition.onend = () => { isRecording=false; document.getElementById('voice-btn').classList.remove('recording'); document.getElementById('voice-icon').textContent='🎙️'; document.getElementById('voice-label').textContent='Tap to record or type below'; };
+  recognition.onend = () => { isRecording=false; document.getElementById('voice-btn').classList.remove('recording'); document.getElementById('voice-icon').textContent='🎙️'; document.getElementById('voice-label').textContent='Tap to record - or type below'; };
   recognition.start();
 }
 
@@ -1294,17 +1550,20 @@ async function getAIFeedback() {
   const isNetLoss = missedStrategic.length > 0;
   const weeklyGoals = S.goals.filter(g=>g.type==='weekly').map(g=>`${g.name} (${g.progress||0}/10)`).join(', ')||'none';
   const monthlyGoals = S.goals.filter(g=>g.type==='monthly').map(g=>`${g.name} (${g.progress||0}/10)`).join(', ')||'none';
+  const urgentGoals = S.goals.filter(g=>{ const u=getUrgency(g.deadline); return u.level>=2; }).map(g=>{ const u=getUrgency(g.deadline); return `${g.name} (${u.label})`; }).join(', ')||'none';
 
-  const prompt = `You are VANTAGE AI, a brutally honest strategic advisor. Be direct, specific, brutal. Use unfiltered language. Max 160 words.
+  const term = getTerm();
+  const prompt = `You are VANTAGE AI — a ${term.briefingTone}. Be direct, specific, brutal. Use ${term.name} language and terminology. Max 160 words.
 Today's data:
 - Mood: ${mood}/10 | Sleep: ${sleep||'?'}h | Cals: ${cals||'?'} | Protein: ${prot||'?'}g | Weight: ${weight||'?'} lbs
 - Habits done (${doneHabits.length}/${S.habits.length}): ${doneHabits.join(', ')||'none'}
 - Missed: ${missedHabits.join(', ')||'none'}
-- STRATEGIC FAILURES: ${missedStrategic.join(', ')||'none'} ${isNetLoss?'-> NET LOSS DAY':''}
-- $V Balance: ${S.vBalance}
+- STRATEGIC FAILURES: ${missedStrategic.join(', ')||'none'} ${isNetLoss?'→ NET LOSS DAY (strategic breaches override baseline wins)':''}
+- $V Balance: ${S.vBalance} | Today earned so far: $V ${doneHabits.reduce((a,h)=>a+getStakeEarn(S.habitStakes[h]||'medium'),0)}
 - Weekly goals: ${weeklyGoals} | Monthly: ${monthlyGoals}
+- Urgent/overdue goals: ${urgentGoals}
 - Log: "${log||'nothing'}"
-Give: 1) Site status verdict 2) One execution fix for tomorrow. Be real. No validation.`;
+Give: 1) Site status verdict ${isNetLoss?'(label as NET LOSS regardless of points)':''} 2) One execution fix for tomorrow 3) Call out urgent goals. Be real. No validation.`;
 
   if (!S.groqKey) { box.innerHTML='<em style="color:var(--yellow)">⚠ Add your free Groq API key in Settings.</em>'; return; }
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Analyzing...';
@@ -1321,8 +1580,13 @@ function renderBuffBar() {
   const bar = document.getElementById('active-buffs-bar');
   if (!bar) return;
   const today = todayStr();
-  const activeItems = BASE_STORE_ITEMS.filter(item => item.buffLabel && S.activeBuffs && S.activeBuffs[item.id] === today);
-  if (!activeItems.length) { bar.style.display = 'none'; return; }
+  const activeItems = BASE_STORE_ITEMS.filter(item =>
+    item.buffLabel && S.activeBuffs && S.activeBuffs[item.id] === today
+  );
+  if (!activeItems.length) {
+    bar.style.display = 'none';
+    return;
+  }
   bar.style.display = 'flex';
   bar.innerHTML = '<span style="font-size:0.6rem;color:var(--muted);font-family:\'Space Mono\',monospace;letter-spacing:2px;white-space:nowrap">ACTIVE BUFFS</span>';
   activeItems.forEach(item => {
@@ -1339,16 +1603,19 @@ function renderStorePage() {
   const infPct = Math.round((infFactor - 1) * 100);
   const infEl = document.getElementById('store-inflation-info');
   if (infEl) {
-    infEl.textContent = infPct > 0 ? `⚠ INFLATION ACTIVE: +${infPct}% (${Math.floor((S.lifetimeEarned||0)/1000)}k $V lifetime earned)` : 'No inflation active. Economy scaling begins at $V 1,000 lifetime.';
+    infEl.textContent = infPct > 0
+      ? `⚠ INFLATION ACTIVE: +${infPct}% (${Math.floor((S.lifetimeEarned||0)/1000)}k $V lifetime earned)`
+      : 'No inflation active. Economy scaling begins at $V 1,000 lifetime.';
     infEl.style.color = infPct > 0 ? 'var(--yellow)' : 'var(--muted)';
   }
 
   const content = document.getElementById('store-content');
   content.innerHTML = '';
 
+  // ── INVENTORY MANIFEST ──
   const invSection = document.createElement('div');
   invSection.className = 'section-gap';
-  invSection.innerHTML = `<div class="store-tier-header" style="color:var(--accent2);border-color:#1a3a2a">Active Inventory - Procurement Manifest</div>`;
+  invSection.innerHTML = `<div class="store-tier-header" style="color:var(--accent2);border-color:#1a3a2a">Active Inventory — Procurement Manifest</div>`;
   const inv = S.inventory || {};
   const invKeys = Object.keys(inv).filter(k => inv[k] > 0);
   if (!invKeys.length) {
@@ -1359,23 +1626,37 @@ function renderStorePage() {
     invKeys.forEach(itemId => {
       const item = BASE_STORE_ITEMS.find(i => i.id === itemId);
       if (!item) return;
+      const qty = inv[itemId];
       const isBuffed = S.activeBuffs && S.activeBuffs[itemId] === todayStr();
       const row = document.createElement('div');
       row.className = 'inv-row';
-      row.innerHTML = `<span class="inv-emoji">${item.emoji}</span><span class="inv-name">${item.name}</span><span class="inv-qty">QTY: ${inv[itemId]}</span><span class="inv-status">${isBuffed ? '<span style="color:var(--green);font-size:0.62rem;letter-spacing:1px;font-family:\'Space Mono\',monospace">▶ ACTIVE</span>' : ''}</span><button class="inv-use-btn" onclick="useInventoryItem('${itemId}')" ${isBuffed ? 'disabled' : ''}>${isBuffed ? 'DEPLOYED' : 'USE'}</button>`;
+      row.innerHTML = `
+        <span class="inv-emoji">${item.emoji}</span>
+        <span class="inv-name">${item.name}</span>
+        <span class="inv-qty">QTY: ${qty}</span>
+        <span class="inv-status">${isBuffed ? '<span style="color:var(--green);font-size:0.62rem;letter-spacing:1px;font-family:\'Space Mono\',monospace">▶ ACTIVE</span>' : ''}</span>
+        <button class="inv-use-btn" onclick="useInventoryItem('${itemId}')" ${isBuffed ? 'disabled' : ''}>
+          ${isBuffed ? 'DEPLOYED' : 'USE'}
+        </button>
+      `;
       invGrid.appendChild(row);
     });
     invSection.appendChild(invGrid);
   }
   content.appendChild(invSection);
 
-  content.appendChild(makeTierSection('Consumables - Short-Term Buffs (-> Inventory)', infFactor, BASE_STORE_ITEMS.filter(i => i.tier==='consumable')));
-  content.appendChild(makeTierSection('Mid-Tier - Stakeholder Rewards', infFactor, BASE_STORE_ITEMS.filter(i => i.tier==='medium')));
-  content.appendChild(makeTierSection('Large Contracts - Major Deployments', infFactor, BASE_STORE_ITEMS.filter(i => i.tier==='large')));
+  // ── PROCUREMENT SECTIONS ──
+  content.appendChild(makeTierSection('Consumables — Short-Term Buffs (→ Inventory)', infFactor,
+    BASE_STORE_ITEMS.filter(i => i.tier==='consumable')));
+  content.appendChild(makeTierSection('Mid-Tier — Stakeholder Rewards', infFactor,
+    BASE_STORE_ITEMS.filter(i => i.tier==='medium')));
+  content.appendChild(makeTierSection('Large Contracts — Major Deployments', infFactor,
+    BASE_STORE_ITEMS.filter(i => i.tier==='large')));
 
+  // ── INFRASTRUCTURE ──
   const infraSection = document.createElement('div');
   infraSection.className = 'section-gap';
-  infraSection.innerHTML = `<div class="store-tier-header">Infrastructure - Permanent Upgrades ${infPct>0?`<span class="inflation-badge">+${infPct}% INFLATION</span>`:''}</div>`;
+  infraSection.innerHTML = `<div class="store-tier-header">Infrastructure — Permanent Upgrades ${infPct>0?`<span class="inflation-badge">+${infPct}% INFLATION</span>`:''}</div>`;
   const infraGrid = document.createElement('div');
   infraGrid.className = 'store-grid';
 
@@ -1386,18 +1667,21 @@ function renderStorePage() {
 
   const multCount = S.multiplierCount || 0;
   const multPrice = getInflatedPrice(5000);
-  const multEl = makeStoreCard('⚡', 'Critical Multiplier', `Permanently +10% $V from CRITICAL habits. ${multCount}/3 stacked. Current bonus: +${multCount*10}%.`, multPrice, infPct > 0, multCount >= 3);
+  const multEl = makeStoreCard('⚡', 'Critical Multiplier',
+    `Permanently +10% $V from CRITICAL habits. ${multCount}/3 stacked. Current bonus: +${multCount*10}%.`,
+    multPrice, infPct > 0, multCount >= 3);
   if (multCount < 3) multEl.querySelector('.buy-btn').onclick = () => buyMultiplier(multPrice);
   infraGrid.appendChild(multEl);
 
   infraSection.appendChild(infraGrid);
   content.appendChild(infraSection);
 
+  // ── RECOVERY ──
   const liqHabits = (S.liquidatedHabits || []).filter(h => !S.habits.includes(h));
   if (liqHabits.length > 0) {
     const recSection = document.createElement('div');
     recSection.className = 'section-gap';
-    recSection.innerHTML = `<div class="store-tier-header" style="border-color:#1a3a1a;color:var(--green)">Recovery - Repurchase Liquidated Habits ($V 750 each)</div>`;
+    recSection.innerHTML = `<div class="store-tier-header" style="border-color:#1a3a1a;color:var(--green)">Recovery — Repurchase Liquidated Habits ($V 750 each)</div>`;
     const recGrid = document.createElement('div');
     recGrid.className = 'store-grid';
     liqHabits.forEach(h => {
@@ -1409,14 +1693,16 @@ function renderStorePage() {
     content.appendChild(recSection);
   }
 
+  // ── TRANSACTION LOG ──
   const txSection = document.createElement('div');
   txSection.className = 'section-gap';
-  txSection.innerHTML = '<div class="store-tier-header">Transaction Log - Last 5 Procurements</div>';
+  txSection.innerHTML = '<div class="store-tier-header">Transaction Log — Last 5 Procurements</div>';
   const txList = document.createElement('div');
   txList.className = 'tx-list';
   const recent = (S.purchases || []).slice(0, 5);
-  if (!recent.length) { txList.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:8px;font-family:\'Space Mono\',monospace">NO TRANSACTIONS ON RECORD.</div>'; }
-  else {
+  if (!recent.length) {
+    txList.innerHTML = '<div style="font-size:0.72rem;color:var(--muted);padding:8px;font-family:\'Space Mono\',monospace">NO TRANSACTIONS ON RECORD.</div>';
+  } else {
     recent.forEach(tx => {
       const txEl = document.createElement('div');
       txEl.className = 'tx-item';
@@ -1448,21 +1734,36 @@ function makeTierSection(title, infFactor, items) {
 function makeStoreCard(emoji, name, desc, price, inflated, disabled=false, recovery=false) {
   const el = document.createElement('div');
   el.className = 'store-item' + (disabled ? ' disabled' : '');
-  el.innerHTML = `<div style="font-size:1.5rem">${emoji}</div><div class="store-item-name">${name}</div><div class="store-item-desc">${desc}</div><div class="store-item-price ${inflated?'inflated':''}">$V ${price.toLocaleString()}</div><button class="buy-btn ${recovery?'recovery':''}" ${disabled?'disabled':''}>${disabled ? 'MAX REACHED' : recovery ? 'Re-mobilize' : 'Procure'}</button>`;
+  el.innerHTML = `
+    <div style="font-size:1.5rem">${emoji}</div>
+    <div class="store-item-name">${name}</div>
+    <div class="store-item-desc">${desc}</div>
+    <div class="store-item-price ${inflated?'inflated':''}">$V ${price.toLocaleString()}</div>
+    <button class="buy-btn ${recovery?'recovery':''}" ${disabled?'disabled':''}>
+      ${disabled ? 'MAX REACHED' : recovery ? 'Re-mobilize' : 'Procure'}
+    </button>
+  `;
   return el;
 }
 
 async function purchaseItem(item, price) {
-  if ((S.vBalance || 0) < price) { showToast(`⚠ INSUFFICIENT CAPITAL. Need $V ${price.toLocaleString()}.`, 2500, true); return; }
+  if ((S.vBalance || 0) < price) {
+    showToast(`⚠ INSUFFICIENT CAPITAL. Need $V ${price.toLocaleString()}.`, 2500, true);
+    return;
+  }
   deductVBalance(price);
   if (!S.purchases) S.purchases = [];
   S.purchases.unshift({ item: item.name, cost: price, date: todayStr() });
+
   if (item.tier === 'consumable') {
+    // Add to inventory — don't activate yet
     if (!S.inventory) S.inventory = {};
     S.inventory[item.id] = (S.inventory[item.id] || 0) + 1;
-    await saveUserSettings(); showToast(`✓ PROCURED: ${item.name} added to inventory. USE it when ready.`);
+    await saveUserSettings();
+    showToast(`✓ PROCURED: ${item.name} added to inventory. USE it when ready.`);
   } else {
-    await saveUserSettings(); showToast(`✓ PROCURED: ${item.name} - -$V ${price.toLocaleString()}`);
+    await saveUserSettings();
+    showToast(`✓ PROCURED: ${item.name} — -$V ${price.toLocaleString()}`);
   }
   renderStorePage();
 }
@@ -1470,21 +1771,30 @@ async function purchaseItem(item, price) {
 async function useInventoryItem(itemId) {
   const item = BASE_STORE_ITEMS.find(i => i.id === itemId);
   if (!item) return;
-  if (!S.inventory || !S.inventory[itemId] || S.inventory[itemId] < 1) { showToast('⚠ Item not in inventory.', 2000, true); return; }
+  if (!S.inventory || !S.inventory[itemId] || S.inventory[itemId] < 1) {
+    showToast('⚠ Item not in inventory.', 2000, true);
+    return;
+  }
   S.inventory[itemId]--;
   if (S.inventory[itemId] <= 0) delete S.inventory[itemId];
+  // Activate buff for today
   if (item.buffLabel) {
     if (!S.activeBuffs) S.activeBuffs = {};
     S.activeBuffs[itemId] = todayStr();
   }
   await saveUserSettings();
-  showToast(`⚡ ${item.buffLabel ? item.buffLabel : item.name.toUpperCase() + ' DEPLOYED'}`, 3500);
-  renderBuffBar(); renderStorePage();
+  const buffMsg = item.buffLabel ? `${item.buffLabel}` : `${item.name.toUpperCase()} DEPLOYED`;
+  showToast(`⚡ ${buffMsg}`, 3500);
+  renderBuffBar();
+  renderStorePage();
 }
 
 async function buyHabitSlot(price) {
-  if ((S.vBalance || 0) < price) { showToast(`⚠ INSUFFICIENT CAPITAL. Habit Slot costs $V ${price.toLocaleString()}. Earn it.`, 3000, true); return; }
-  const name = prompt(`NEW HABIT SLOT - $V ${price.toLocaleString()}\n\nEnter the name for your new habit:`);
+  if ((S.vBalance || 0) < price) {
+    showToast(`⚠ INSUFFICIENT CAPITAL. Habit Slot costs $V ${price.toLocaleString()}. Earn it.`, 3000, true);
+    return;
+  }
+  const name = prompt(`NEW HABIT SLOT — $V ${price.toLocaleString()}\n\nEnter the name for your new habit:`);
   if (!name || !name.trim()) return;
   const stakeLevels = ['low','medium','high','critical'];
   const stakeChoice = prompt(`Set Stake Level for "${name.trim()}":\n\n0 = LOW (+10/-20)\n1 = MEDIUM (+40/-100)\n2 = HIGH (+100/-300)\n3 = CRITICAL (+250/-1000)\n\nEnter 0-3:`);
@@ -1497,13 +1807,20 @@ async function buyHabitSlot(price) {
   if (!S.purchases) S.purchases = [];
   S.purchases.unshift({ item: `New Habit Slot: ${name.trim()} [${stake.toUpperCase()}]`, cost: price, date: todayStr() });
   await saveUserSettings();
-  showToast(`✓ HABIT DEPLOYED: "${name.trim()}" [${stake.toUpperCase()}] - -$V ${price.toLocaleString()}`);
-  renderStorePage(); renderHabitList(todayStr());
+  showToast(`✓ HABIT DEPLOYED: "${name.trim()}" [${stake.toUpperCase()}] — -$V ${price.toLocaleString()}`);
+  renderStorePage();
+  renderHabitList(todayStr());
 }
 
 async function buyMultiplier(price) {
-  if ((S.vBalance || 0) < price) { showToast(`⚠ Insufficient $V. Need $V ${price.toLocaleString()}.`, 2500, true); return; }
-  if ((S.multiplierCount || 0) >= 3) { showToast('Maximum multiplier reached (3x).', 2000, true); return; }
+  if ((S.vBalance || 0) < price) {
+    showToast(`⚠ Insufficient $V. Need $V ${price.toLocaleString()}.`, 2500, true);
+    return;
+  }
+  if ((S.multiplierCount || 0) >= 3) {
+    showToast('Maximum multiplier reached (3x).', 2000, true);
+    return;
+  }
   deductVBalance(price);
   S.multiplierCount = (S.multiplierCount || 0) + 1;
   if (!S.purchases) S.purchases = [];
@@ -1514,14 +1831,18 @@ async function buyMultiplier(price) {
 }
 
 async function repurchaseHabit(habitName, price) {
-  if ((S.vBalance || 0) < price) { showToast(`⚠ Insufficient $V. Need $V ${price.toLocaleString()}.`, 2500, true); return; }
+  if ((S.vBalance || 0) < price) {
+    showToast(`⚠ Insufficient $V. Need $V ${price.toLocaleString()}.`, 2500, true);
+    return;
+  }
   deductVBalance(price);
   S.habits.push(habitName);
   if (!S.purchases) S.purchases = [];
   S.purchases.unshift({ item: `Recovery: ${habitName}`, cost: price, date: todayStr() });
   await saveUserSettings();
   showToast(`✓ RECOVERED: "${habitName}" back on site.`);
-  renderStorePage(); renderHabitList(todayStr());
+  renderStorePage();
+  renderHabitList(todayStr());
 }
 
 // ─── MONTH PAGE ───────────────────────────────────────────────────────────────
@@ -1547,7 +1868,7 @@ function renderMonthPage() {
   document.getElementById('month-stats').innerHTML = `
     <div class="card"><div class="card-label">Avg Mood</div><div class="stat-big" style="color:var(--pink)">${avgMood}<span style="font-size:1rem;color:var(--muted)">/10</span></div><span class="tag tag-a">${MONTHS[S.month]}</span></div>
     <div class="card"><div class="card-label">Avg Completion</div><div class="stat-big" style="color:var(--accent)">${avgComp}%</div><span class="tag ${avgComp>=60?'tag-g':avgComp>=40?'tag-y':'tag-r'}">${avgComp>=60?'On track':avgComp>=40?'Getting there':'Needs focus'}</span></div>
-    <div class="card"><div class="card-label">Weight Change</div><div class="stat-big" style="color:${wChange&&wChange<0?'var(--green)':'var(--yellow)'}">${wChange!==null?(wChange>0?'+':'')+wChange+' lbs':'-'}</div><span class="tag tag-a">${firstW||'?'} -> ${lastW||'?'}</span></div>
+    <div class="card"><div class="card-label">Weight Change</div><div class="stat-big" style="color:${wChange&&wChange<0?'var(--green)':'var(--yellow)'}">${wChange!==null?(wChange>0?'+':'')+wChange+' lbs':'-'}</div><span class="tag tag-a">${firstW||'?'} → ${lastW||'?'}</span></div>
     <div class="card"><div class="card-label">Days Logged</div><div class="stat-big" style="color:var(--accent2)">${logged}</div><div class="stat-sub">of ${dim} days</div></div>
     <div class="card"><div class="card-label">$V Balance</div><div class="stat-big" style="font-family:'Space Mono',monospace;color:var(--accent)">${(S.vBalance||0).toLocaleString()}</div><div class="stat-sub" style="font-family:'Space Mono',monospace">Lifetime: ${(S.lifetimeEarned||0).toLocaleString()}</div></div>
   `;
@@ -1558,12 +1879,15 @@ function renderMonthPage() {
     const wrap=document.createElement('div'); wrap.className='mb-wrap';
     const bar=document.createElement('div'); bar.className='mb';
     bar.style.height=m?`${(m/10)*100}%`:'3px'; bar.style.background=m?(moodColors[m-1]||'#6c63ff'):'var(--border)';
+    bar.title=`Day ${d}: ${m||'-'}`;
     const lbl=document.createElement('div'); lbl.className='mb-lbl'; lbl.textContent=d%7===1?d:'';
     wrap.appendChild(bar); wrap.appendChild(lbl); mc.appendChild(wrap);
   }
   const svg=document.getElementById('weight-svg');
   if (weights.length>=2) {
-    const W=300,H=70,P=6; const vals=weights.map(w=>w.v); const minV=Math.min(...vals)-0.5, maxV=Math.max(...vals)+0.5;
+    const W=300,H=70,P=6;
+    const vals=weights.map(w=>w.v);
+    const minV=Math.min(...vals)-0.5, maxV=Math.max(...vals)+0.5;
     const pts=weights.map(w=>{ const x=P+(w.d-1)/(dim-1)*(W-P*2); const y=P+(1-(w.v-minV)/(maxV-minV))*(H-P*2); return `${x},${y}`; }).join(' ');
     svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round"/>`;
   } else { svg.innerHTML=`<text x="10" y="35" fill="#555" font-size="11" font-family="Space Mono">No weight data yet</text>`; }
@@ -1578,10 +1902,13 @@ function renderMonthPage() {
       if (checked) cnt++;
       const dot=document.createElement('div'); dot.className='hm-dot';
       dot.style.background=checked?'var(--green)':'var(--border)';
+      dot.title=`${h} — Day ${d}: ${checked?'✓':'✗'}`;
       dots.appendChild(dot);
     }
     const pct=document.createElement('div'); pct.className='hm-pct';
-    const p=Math.round((cnt/dim)*100); pct.style.color=p>=70?'var(--green)':p>=40?'var(--yellow)':'var(--red)'; pct.textContent=p+'%';
+    const p=Math.round((cnt/dim)*100);
+    pct.style.color=p>=70?'var(--green)':p>=40?'var(--yellow)':'var(--red)';
+    pct.textContent=p+'%';
     row.appendChild(lbl); row.appendChild(dots); row.appendChild(pct); hm.appendChild(row);
   });
   renderBarChart('cal-bars', cals, 2800, 'var(--yellow)', '');
@@ -1631,7 +1958,7 @@ async function openCalDay(dk, d) {
   }
   const day=getDay(dk);
   const editor=document.getElementById('cal-day-editor'); editor.style.display='block';
-  document.getElementById('cal-editing-label').textContent=`Editing - ${MONTHS[calViewMonth]} ${d}, ${calViewYear}`;
+  document.getElementById('cal-editing-label').textContent=`Editing — ${MONTHS[calViewMonth]} ${d}, ${calViewYear}`;
   document.getElementById('cal-mood').value=day.mood||7;
   document.getElementById('cal-mood-val').textContent=day.mood||7;
   document.getElementById('cal-weight').value=day.weight||'';
@@ -1694,7 +2021,11 @@ function renderSettings() {
   document.getElementById('set-month').value=S.month;
   document.getElementById('set-year').value=S.year;
   document.getElementById('set-groq-key').value=S.groqKey||'';
-  renderHabitsEditor(); renderGoalsEditor(); renderEconomyStatus();
+  const archEl = document.getElementById('set-archetype');
+  if (archEl) archEl.value = S.archetype || 'builder';
+  renderHabitsEditor();
+  renderGoalsEditor();
+  renderEconomyStatus();
 }
 
 function renderEconomyStatus() {
@@ -1706,7 +2037,7 @@ function renderEconomyStatus() {
     <div style="color:var(--accent);font-size:1.1rem;margin-bottom:12px">$V ${(S.vBalance||0).toLocaleString()}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.7rem">
       <div><span style="color:var(--muted)">Lifetime earned:</span><br><span style="color:var(--text)">$V ${(S.lifetimeEarned||0).toLocaleString()}</span></div>
-      <div><span style="color:var(--muted)">Contract signed:</span><br><span style="color:${S.contractSigned?'var(--green)':'var(--yellow)'}">${S.contractSigned?'YES - Hard Mode Active':'NO - Probationary'}</span></div>
+      <div><span style="color:var(--muted)">Contract signed:</span><br><span style="color:${S.contractSigned?'var(--green)':'var(--yellow)'}">${S.contractSigned?'YES — Hard Mode Active':'NO — Probationary'}</span></div>
       <div><span style="color:var(--muted)">Inflation factor:</span><br><span style="color:${infPct>0?'var(--yellow)':'var(--muted)'}">+${infPct}% on prices/penalties</span></div>
       <div><span style="color:var(--muted)">Multiplier stack:</span><br><span style="color:var(--accent)">${S.multiplierCount||0}/3 (+${(S.multiplierCount||0)*10}% Critical)</span></div>
       <div><span style="color:var(--muted)">Liquidated habits:</span><br><span style="color:${(S.liquidatedHabits||[]).length>0?'var(--red)':'var(--muted)'}">${(S.liquidatedHabits||[]).length} removed</span></div>
@@ -1734,21 +2065,35 @@ function renderHabitsEditor() {
 }
 
 function auditStakeChange(el, habitName) {
-  const newStake=el.value; const oldStake=S.habitStakes[habitName]||'medium';
+  const newStake=el.value;
+  const oldStake=S.habitStakes[habitName]||'medium';
   if (oldStake==='critical' && newStake!=='critical') {
-    if (!confirm(`⚠ SCOPE REDUCTION DETECTED\n\n"${habitName}" is classified CRITICAL.\n\nDowngrading reduces accountability standards.\n\nAre you avoiding the work, or is the requirement actually changing?`)) el.value='critical';
+    if (!confirm(`⚠ SCOPE REDUCTION DETECTED\n\n"${habitName}" is classified CRITICAL.\n\nDowngrading reduces accountability standards.\n\nAre you avoiding the work, or is the requirement actually changing?`)) {
+      el.value='critical';
+    }
   }
 }
-function addHabitField() { showToast(`⚠ Adding habits costs $V ${getInflatedPrice(2500).toLocaleString()}. Use the Store.`, 3500, true); }
+
+function addHabitField() {
+  const cost = getInflatedPrice(2500);
+  showToast(`⚠ Adding habits costs $V ${cost.toLocaleString()}. Use the Store → Habit Slot.`, 3500, true);
+}
 function removeHabit(i) { S.habits.splice(i,1); renderHabitsEditor(); }
 
 async function saveHabits() {
   const nameInputs=document.querySelectorAll('[id^="hf-"]');
   const stakeInputs=document.querySelectorAll('[id^="hs-"]');
   const newHabits=[]; const newStakes={};
-  nameInputs.forEach((el,i) => { const name=el.value.trim(); if (name) { newHabits.push(name); newStakes[name]=stakeInputs[i]?.value||'medium'; } });
+  nameInputs.forEach((el,i) => {
+    const name=el.value.trim();
+    if (name) { newHabits.push(name); newStakes[name]=stakeInputs[i]?.value||'medium'; }
+  });
   S.habits=newHabits; S.habitStakes=newStakes;
-  await saveUserSettings(); showToast('Habits & stakes saved ✓'); renderHabitsEditor(); initToday(todayStr());
+  await saveUserSettings();
+  showToast('Habits & stakes saved ✓');
+  renderHabitsEditor();
+  // Force Today page to reflect the new habit array and stakes immediately
+  initToday(todayStr());
 }
 
 function renderGoalsEditor() {
@@ -1782,237 +2127,319 @@ async function saveGoals() {
   const dateInputs=document.querySelectorAll('[id^="gdate-"]');
   nameInputs.forEach((el,i) => { if(S.goals[i]){ S.goals[i].name=el.value.trim(); S.goals[i].deadline=dateInputs[i]?.value||''; }});
   S.goals=S.goals.filter(g=>g.name);
-  await saveUserSettings(); showToast('Goals saved ✓'); renderGoalsEditor(); renderWeeklyGoals(); initToday(todayStr());
+  await saveUserSettings();
+  showToast('Goals saved ✓');
+  renderGoalsEditor();
+  // Force Today page weekly goals section to sync immediately
+  renderWeeklyGoals();
+  initToday(todayStr());
 }
-
-async function saveGroqKey() { S.groqKey=document.getElementById('set-groq-key').value.trim(); localStorage.setItem('groq_key',S.groqKey); showToast('API key saved ✓'); }
+async function saveGroqKey() {
+  S.groqKey=document.getElementById('set-groq-key').value.trim();
+  localStorage.setItem('groq_key',S.groqKey); showToast('API key saved ✓');
+}
 async function saveMonthSettings() {
-  S.month=parseInt(document.getElementById('set-month').value); S.year=parseInt(document.getElementById('set-year').value);
-  await loadMonthLogs(); updateSidebar(); showToast('Month updated ✓'); calViewMonth=S.month; calViewYear=S.year;
+  S.month=parseInt(document.getElementById('set-month').value);
+  S.year=parseInt(document.getElementById('set-year').value);
+  await loadMonthLogs(); updateSidebar(); showToast('Month updated ✓');
+  calViewMonth=S.month; calViewYear=S.year;
 }
 async function clearMonthData() {
   if (!confirm('Clear ALL logged data for this month? Cannot be undone.')) return;
-  const from=dateKey(1,S.month,S.year); const to=dateKey(daysInMonth(S.month,S.year),S.month,S.year);
+  const from=dateKey(1,S.month,S.year);
+  const to=dateKey(daysInMonth(S.month,S.year),S.month,S.year);
   await sb.from('logs').delete().eq('user_id',currentUser.id).gte('date',from).lte('date',to);
   S.days={}; showToast('Data cleared'); initToday(todayStr());
 }
 
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 function updateSidebar() {
   const dim=daysInMonth(S.month,S.year);
   document.getElementById('sidebar-month').textContent=MONTHS[S.month]+' '+S.year;
   document.getElementById('sidebar-day').textContent=`Day ${new Date().getDate()} of ${dim}`;
 }
 
-// ─── GROQ API ─────────────────────────────────────────────────────────────────
-async function callGroq(messages, maxTokens = 500, temperature = 0.7) {
-  const key = S.groqKey || localStorage.getItem('groq_key');
-  if (!key) throw new Error('No Groq API key configured.');
 
+// ─── ARCHETYPE UI ─────────────────────────────────────────────────────────────
+function updateArchetypeUI() {
+  const term = getTerm();
+  const badge = document.getElementById('sidebar-archetype');
+  if (badge) badge.textContent = term.icon + ' ' + term.name.toUpperCase();
+  const archEl = document.getElementById('set-archetype');
+  if (archEl) archEl.value = S.archetype || 'builder';
+}
+
+async function changeArchetype(val) {
+  S.archetype = val;
+  await saveUserSettings();
+  updateArchetypeUI();
+  renderStorePage();
+  renderHabitList(todayStr());
+  showToast(`⚡ Archetype switched to ${getTerm().name}`);
+}
+
+// ─── GROQ API WITH RETRY ──────────────────────────────────────────────────────
+async function callGroq(messages, maxTokens=500, temperature=0.8) {
+  if (!S.groqKey) throw new Error('No Groq API key configured.');
   const body = JSON.stringify({
-    // UPDATED MODEL SPEC
-    model: 'llama-3.1-8b-instant', 
+    model: 'llama-3.3-70b-versatile',
     messages,
     max_tokens: maxTokens,
     temperature
   });
-
-  const headers = { 
-    'Content-Type': 'application/json', 
-    'Authorization': 'Bearer ' + key.trim() 
-  };
-
-  try {
-    let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
-      method: 'POST', 
-      headers, 
-      body 
-    });
-
-    if (res.status === 401) throw new Error('Invalid API Key. Check your Groq console.');
-    if (res.status === 404) throw new Error('Model not found. Update Model ID to llama-3.1-8b-instant.');
-    if (res.status === 429) {
-      showToast('Rate limit hit. Retrying...', 2000, true);
-      await new Promise(r => setTimeout(r, 2000));
-      // Single retry attempt
-      res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers, body });
-    }
-
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    return data.choices[0].message.content.trim();
-  } catch (e) {
-    console.error('Groq API Failure:', e);
-    throw e;
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + S.groqKey };
+  let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers, body });
+  if (res.status === 429) {
+    // Rate-limit retry: wait 2 seconds then retry once
+    await new Promise(r => setTimeout(r, 2000));
+    res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers, body });
+    if (res.status === 429) throw new Error('Rate limit exceeded. Try again in a moment.');
   }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.choices[0].message.content.trim();
 }
 
-// ─── INITIALIZATION MODAL (REPLACES COMMISSIONING) ────────────────────────────
-function showOnboarding() { document.getElementById('onboarding-modal').classList.remove('hidden'); obStep(1); }
+// ─── ONBOARDING ───────────────────────────────────────────────────────────────
+let obSelectedArchetype = 'builder';
+
+function showOnboarding() {
+  document.getElementById('onboarding-modal').classList.remove('hidden');
+  obStep(1);
+}
+
 function obStep(n) {
-  [1,2].forEach(i => {
+  [1,2,3].forEach(i => {
     document.getElementById('ob-step-' + i).style.display = i===n ? 'block' : 'none';
     const dot = document.getElementById('ob-dot-' + i);
     dot.className = 'modal-step-dot' + (i<n ? ' done' : i===n ? ' active' : '');
   });
-  document.getElementById('ob-step-3').style.display = n===3 ? 'block' : 'none';
-  const labels = ['Step 1 of 2 - API Key','Step 2 of 2 - Objective Alignment', 'Initialization Complete'];
+  const labels = ['Step 1 of 3 — API Key','Step 2 of 3 — Archetype','Step 3 of 3 — Site Survey'];
   document.getElementById('ob-step-label').textContent = labels[n-1];
 }
+
 function obNext(step) {
   if (step === 1) {
     const key = document.getElementById('ob-groq-key').value.trim();
-    if (!key || !key.startsWith('gsk_')) { document.getElementById('ob-step1-err').textContent = '⚠ Enter a valid Groq key starting with gsk_'; return; }
-    S.groqKey = key; localStorage.setItem('groq_key', key);
+    if (!key || !key.startsWith('gsk_')) {
+      document.getElementById('ob-step1-err').textContent = '⚠ Enter a valid Groq key starting with gsk_';
+      return;
+    }
+    S.groqKey = key;
+    localStorage.setItem('groq_key', key);
     document.getElementById('ob-step1-err').textContent = '';
     obStep(2);
+  } else if (step === 2) {
+    if (!obSelectedArchetype) {
+      document.getElementById('ob-step2-err').textContent = '⚠ Select an archetype to continue.';
+      return;
+    }
+    S.archetype = obSelectedArchetype;
+    document.getElementById('ob-step2-err').textContent = '';
+    obStep(3);
   }
 }
+
 function obBack(step) { obStep(step - 1); }
+
+function selectArchetype(el, arch) {
+  document.querySelectorAll('.archetype-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  obSelectedArchetype = arch;
+}
 
 async function initializeSitePlan() {
   const q1 = document.getElementById('survey-q1').value.trim();
   const q2 = document.getElementById('survey-q2').value.trim();
-  if (!q1 || !q2) { 
-    document.getElementById('ob-step2-err').textContent = '⚠ Objective and Risk are required.'; 
-    return; 
+  const q3 = document.getElementById('survey-q3').value.trim();
+  const q4 = document.getElementById('survey-q4').value.trim();
+  if (!q1 || !q2 || !q3 || !q4) {
+    document.getElementById('ob-step3-err').textContent = '⚠ All 4 fields are required.';
+    return;
   }
-  
-  document.getElementById('ob-step2-err').textContent = '';
+  document.getElementById('ob-step3-err').textContent = '';
   document.getElementById('ob-generate-btn').disabled = true;
   document.getElementById('ob-generating').style.display = 'block';
 
-  const prompt = `You are a high-level Strategic Advisor. Analyze this user's objective and risk profile.
-OBJECTIVE: ${q1}
-RISK: ${q2}
+  const term = TERMINOLOGY[S.archetype] || TERMINOLOGY.builder;
+  const prompt = `You are a ${term.briefingTone}. A new operator has completed their Site Survey. Generate their custom performance plan.
 
-You must output ONLY a valid, raw JSON object. Do not use markdown. Do not use bold text. Do not include any preamble or postscript. Follow this exact structure:
+ARCHETYPE: ${term.name}
+SURVEY ANSWERS:
+- Primary Objective: ${q1}
+- Anti-Self / Leak: ${q2}
+- Capital Motivation: ${q3}
+- Transparency Gap: ${q4}
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no extra text):
 {
-  "suggestedHabits": ["Habit 1", "Habit 2", "Habit 3"],
-  "rationale": "Two brutal sentences explaining why.",
-  "monthlyGoalSuggestion": "One specific target"
-}`;
+  "habits": [
+    {"name": "habit name", "stake": "low|medium|high|critical"},
+    {"name": "habit name", "stake": "low|medium|high|critical"},
+    {"name": "habit name", "stake": "low|medium|high|critical"},
+    {"name": "habit name", "stake": "low|medium|high|critical"},
+    {"name": "habit name", "stake": "low|medium|high|critical"}
+  ],
+  "weeklyGoals": [
+    {"name": "weekly goal 1"},
+    {"name": "weekly goal 2"}
+  ],
+  "monthlyGoal": {"name": "monthly goal"},
+  "briefing": "A 2-sentence opening briefing to this operator using ${term.name} language and terminology."
+}
+
+Rules: Use ${term.name} vocabulary. Stakes must reflect importance (critical = non-negotiable). Habits should address their anti-self behavior and objective.`;
 
   try {
-    const raw = await callGroq([{role:'user', content: prompt}], 500, 0.7);
-    
-    // Robust Extraction: Find the brackets and slice the garbage out
-    const jsonStart = raw.indexOf('{');
-    const jsonEnd = raw.lastIndexOf('}');
-    
-    if (jsonStart === -1 || jsonEnd === -1) {
-      throw new Error("AI failed to build structural JSON.");
-    }
-    
-    const cleanData = raw.substring(jsonStart, jsonEnd + 1);
-    const plan = JSON.parse(cleanData);
+    const raw = await callGroq([{role:'user', content: prompt}], 800, 0.85);
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const plan = JSON.parse(clean);
 
-    document.getElementById('ob-suggestions-box').innerHTML = `
-      <div class="review-ai-box">
-        <div class="review-ai-label">AI STRATEGIC SUGGESTIONS</div>
-        <p style="margin-bottom:12px">${plan.rationale}</p>
-        <ul style="margin-left:18px; font-size:0.8rem; margin-bottom:12px; color:var(--text)">
-          ${plan.suggestedHabits.map(h => `<li>${h}</li>`).join('')}
-        </ul>
-        <p><strong>Target:</strong> ${plan.monthlyGoalSuggestion}</p>
-      </div>
-      <button class="modal-btn-primary" style="margin-top:16px; width:100%" onclick="completeOnboarding()">Accept & Finalize Site →</button>
-    `;
-    obStep(3);
+    // Apply the generated habits
+    S.habits = plan.habits.map(h => h.name);
+    S.habitStakes = {};
+    plan.habits.forEach(h => { S.habitStakes[h.name] = h.stake; });
+
+    // Apply goals
+    S.goals = [];
+    if (plan.weeklyGoals) {
+      plan.weeklyGoals.forEach(g => {
+        S.goals.push({ id: 'g_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name: g.name, type: 'weekly', deadline: '', progress: 0 });
+      });
+    }
+    if (plan.monthlyGoal) {
+      S.goals.push({ id: 'g_'+Date.now()+'_mx', name: plan.monthlyGoal.name, type: 'monthly', deadline: '', progress: 0 });
+    }
+
+    // Store briefing
+    if (plan.briefing) {
+      localStorage.setItem('vantage_briefing_' + todayStr(), plan.briefing);
+    }
+
+    S.onboardingComplete = true;
+    await saveUserSettings();
+
+    document.getElementById('onboarding-modal').classList.add('hidden');
+    updateArchetypeUI();
+    renderHabitList(todayStr());
+    renderWeeklyGoals();
+    showToast('⚡ Site Plan commissioned. ' + term.name + ' OS activated.');
+    checkTemporalReviews();
   } catch(e) {
-    console.error("Raw AI Output:", e);
-    document.getElementById('ob-step2-err').textContent = '⚠ Parse Error: ' + e.message + ' Try generating again.';
+    document.getElementById('ob-step3-err').textContent = '⚠ AI error: ' + e.message + '. Check your Groq key.';
     document.getElementById('ob-generate-btn').disabled = false;
     document.getElementById('ob-generating').style.display = 'none';
   }
 }
 
-async function completeOnboarding() {
-  S.onboardingComplete = true;
-  await saveUserSettings();
-  document.getElementById('onboarding-modal').classList.add('hidden');
-  
-  // Refresh the UI to show the main app
-  updateArchetypeUI && typeof updateArchetypeUI === 'function' ? updateArchetypeUI() : null;
-  renderHabitList(todayStr());
-  renderWeeklyGoals();
-  
-  showToast('⚡ Site Plan commissioned. OS activated.');
-  checkTemporalReviews();
-}
-
 // ─── TEMPORAL REVIEWS ─────────────────────────────────────────────────────────
 function checkTemporalReviews() {
-  if (!S.onboardingComplete) return;
   const now = new Date();
   const today = todayStr();
+
+  // Monday morning weekly review
   if (now.getDay() === 1) {
-    if (S.lastWeeklyReview !== today) {
+    const lastReview = S.lastWeeklyReview;
+    const thisMonday = today;
+    if (lastReview !== thisMonday) {
       setTimeout(() => showWeeklyReview(), 800);
     }
   }
+
+  // 1st of month recap
   if (now.getDate() === 1) {
-    const lastMonth = now.getMonth() === 0 ? (now.getFullYear()-1) + '-12' : now.getFullYear() + '-' + String(now.getMonth()).padStart(2,'0');
-    if (S.lastMonthlyRecap !== lastMonth) {
+    const lastRecap = S.lastMonthlyRecap;
+    // Get last month's identifier
+    const lastMonth = now.getMonth() === 0
+      ? (now.getFullYear()-1) + '-12'
+      : now.getFullYear() + '-' + String(now.getMonth()).padStart(2,'0');
+    if (lastRecap !== lastMonth) {
       setTimeout(() => showMonthlyRecap(lastMonth), 1200);
     }
   }
 }
 
-// WEEKLY REVIEW - NON-NEGOTIABLE LOGIC
-function showWeeklyReview() {
+async function showWeeklyReview() {
   const modal = document.getElementById('weekly-review-modal');
-  modal.classList.remove('hidden');
   const body = document.getElementById('weekly-review-body');
-  const prevGoal = S.nonNegotiableGoal?.name || "No target set last week";
-  
-  body.innerHTML = `
-    <div class="card section-gap">
-      <div class="card-label">Last Week's Non-Negotiable</div>
-      <div class="stat-big" style="font-size:1.5rem; margin-bottom:16px">${prevGoal}</div>
-      <div class="modal-actions" id="weekly-goal-actions">
-        <button class="modal-btn-primary" onclick="markWeeklyGoal(true)">✓ ACCOMPLISHED</button>
-        <button class="modal-btn-secondary" onclick="markWeeklyGoal(false)">✕ FAILED</button>
-      </div>
-    </div>
-    
-    <div id="new-weekly-goal-input" style="display:none">
-      <span class="modal-label">Set This Week's Non-Negotiable</span>
-      <p class="modal-hint">This is your 'One Thing'. If you do nothing else this week, you must do this.</p>
-      <input type="text" class="inp" id="next-weekly-goal" placeholder="e.g. List 15 items on Maize Collective...">
-      <button class="modal-btn-primary" style="margin-top:12px; width:100%" onclick="saveNewWeeklyGoal()">Set Goal & Initialize Week</button>
-    </div>
-  `;
-}
+  modal.classList.remove('hidden');
 
-async function markWeeklyGoal(success) {
-  document.getElementById('weekly-goal-actions').style.display = 'none';
-  if (success && S.nonNegotiableGoal?.name) {
-    addVBalance(500, 'Weekly Non-Negotiable');
-    showToast('+$V 500 - Weekly Target Hit');
-  } else if (!success && S.nonNegotiableGoal?.name) {
-    deductVBalance(500);
-    showToast('-$V 500 - Target Missed', 2500, true);
+  // Build last 7 days data
+  const days = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const dk = d.toISOString().split('T')[0];
+    const dayData = S.days[dk] || { habits:{}, mood:null, weight:null, sleep:null };
+    const done = S.habits.filter(h => dayData.habits[h]).length;
+    const total = S.habits.length;
+    const pct = total > 0 ? done/total : 0;
+    days.push({ dk, date: d, done, total, pct, sleep: dayData.sleep, weight: dayData.weight, mood: dayData.mood });
   }
-  document.getElementById('new-weekly-goal-input').style.display = 'block';
-}
 
-async function saveNewWeeklyGoal() {
-  const next = document.getElementById('next-weekly-goal').value.trim();
-  if (!next) return;
-  S.nonNegotiableGoal = { name: next, status: 'pending', setDate: todayStr() };
+  const totalDone = days.reduce((a,d) => a+d.done, 0);
+  const totalPossible = days.reduce((a,d) => a+d.total, 0);
+  const successRate = totalPossible > 0 ? Math.round(totalDone/totalPossible*100) : 0;
+
+  // Calculate $V earned this week (approx from habit completions)
+  const weekEarned = days.reduce((a, d) => {
+    return a + S.habits.filter(h => (S.days[d.dk]||{habits:{}}).habits[h]).reduce((s, h) => s + (STAKES[S.habitStakes[h]||'medium']?.earn || 40), 0);
+  }, 0);
+
+  const term = getTerm();
+  const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  // Heatmap HTML
+  let heatmapHTML = '<div class="review-heatmap">';
+  days.forEach(d => {
+    const pct = d.pct;
+    const color = pct >= 0.8 ? '#4ade80' : pct >= 0.5 ? '#fbbf24' : pct > 0 ? '#f87171' : '#262626';
+    heatmapHTML += `<div class="review-hm-col">`;
+    S.habits.forEach(h => {
+      const done = (S.days[d.dk]||{habits:{}}).habits[h];
+      const stakeColor = done ? '#4ade80' : '#262626';
+      heatmapHTML += `<div class="review-hm-dot" style="background:${stakeColor}" title="${h}"></div>`;
+    });
+    heatmapHTML += `<div class="review-hm-label">${DAYS_SHORT[d.date.getDay()]}</div></div>`;
+  });
+  heatmapHTML += '</div>';
+
+  const avgSleep = days.filter(d=>d.sleep).reduce((a,d)=>a+d.sleep,0) / (days.filter(d=>d.sleep).length||1);
+  const avgMood = days.filter(d=>d.mood).reduce((a,d)=>a+d.mood,0) / (days.filter(d=>d.mood).length||1);
+
+  body.innerHTML = `
+    <div class="review-stat-row">
+      <div class="review-stat"><div class="review-stat-label">${term.progressLabel}</div><div class="review-stat-val" style="color:${successRate>=80?'var(--green)':successRate>=50?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
+      <div class="review-stat"><div class="review-stat-label">${term.profitLabel}</div><div class="review-stat-val" style="color:var(--accent)">+$V ${weekEarned.toLocaleString()}</div></div>
+      <div class="review-stat"><div class="review-stat-label">Avg Sleep</div><div class="review-stat-val" style="color:var(--blue)">${avgSleep.toFixed(1)}h</div></div>
+      <div class="review-stat"><div class="review-stat-label">Avg Mood</div><div class="review-stat-val" style="color:var(--pink)">${avgMood.toFixed(1)}</div></div>
+    </div>
+    <div style="font-size:0.62rem;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">7-Day Habit Matrix</div>
+    ${heatmapHTML}
+    <div class="review-ai-box" id="weekly-ai-text"><div class="review-ai-label">AI DEBRIEF</div><span style="color:var(--muted);font-size:0.78rem">Generating analysis...</span></div>
+  `;
+
+  // Mark as reviewed
   S.lastWeeklyReview = todayStr();
   await saveUserSettings();
-  document.getElementById('weekly-review-modal').classList.add('hidden');
-  showToast('Weekly protocol active.');
+
+  // Generate AI debrief
+  if (S.groqKey) {
+    try {
+      const missedHabits = S.habits.filter(h => days.filter(d => !(S.days[d.dk]||{habits:{}}).habits[h]).length >= 4);
+      const aiText = await callGroq([{role:'user',content:`You are a ${getTerm().briefingTone}. Deliver a weekly performance debrief. 7-day success rate: ${successRate}%. Habits frequently missed: ${missedHabits.join(', ')||'none'}. $V earned this week: ${weekEarned}. Avg sleep: ${avgSleep.toFixed(1)}h. Be direct and specific. 3-4 sentences max. Use ${getTerm().name} language.`}], 200, 0.8);
+      document.getElementById('weekly-ai-text').innerHTML = '<div class="review-ai-label">AI DEBRIEF</div>' + aiText;
+    } catch(e) {
+      document.getElementById('weekly-ai-text').innerHTML = '<div class="review-ai-label">AI DEBRIEF</div><em style="color:var(--muted);font-size:0.78rem">Debrief unavailable.</em>';
+    }
+  }
 }
 
-// MONTHLY RECAP - REFLECTION LOGIC
 async function showMonthlyRecap(monthKey) {
   const modal = document.getElementById('monthly-recap-modal');
   const body = document.getElementById('monthly-recap-body');
   const [year, month] = monthKey.split('-').map(Number);
   modal.classList.remove('hidden');
-  document.getElementById('monthly-recap-sub').textContent = `${['','January','February','March','April','May','June','July','August','September','October','November','December'][month]} ${year} - Strategic Assessment`;
+  document.getElementById('monthly-recap-sub').textContent = `${['','January','February','March','April','May','June','July','August','September','October','November','December'][month]} ${year} — Strategic Assessment`;
 
   const dim = new Date(year, month, 0).getDate();
   let totalDone = 0, totalPossible = 0;
@@ -2023,69 +2450,45 @@ async function showMonthlyRecap(monthKey) {
     totalPossible += S.habits.length;
   }
   const successRate = totalPossible > 0 ? Math.round(totalDone/totalPossible*100) : 0;
-  window._tempMonthlyStats = { successRate, monthKey, dim };
+  const isFailure = successRate < 40;
+  const term = getTerm();
 
   body.innerHTML = `
+    ${isFailure ? '<div class="failure-banner">⚠ STRATEGIC FAILURE — ' + successRate + '% EXECUTION — PIVOT REQUIRED</div>' : ''}
     <div class="review-stat-row">
-      <div class="review-stat"><div class="review-stat-label">Completion Rate</div><div class="review-stat-val" style="color:${successRate>=70?'var(--green)':successRate>=40?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
+      <div class="review-stat"><div class="review-stat-label">Monthly ${term.progressLabel}</div><div class="review-stat-val" style="color:${successRate>=70?'var(--green)':successRate>=40?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
       <div class="review-stat"><div class="review-stat-label">Days Tracked</div><div class="review-stat-val">${dim}</div></div>
     </div>
-    <span class="modal-label">Monthly Reflection Log</span>
-    <p class="modal-hint">Analyze your trajectory. What habits are currently failing? What system leaks are you ignoring?</p>
-    <textarea class="inp" id="monthly-reflection-text" rows="5" placeholder="Speak on your trajectory..."></textarea>
-    <button class="analyze-btn" id="monthly-submit-btn" onclick="submitMonthlyReflection()">Submit for Strategic Audit</button>
-    <div id="monthly-ai-result"></div>
+    <div class="review-ai-box" id="monthly-ai-text"><div class="review-ai-label">AI MONTHLY CRITIQUE</div><span style="color:var(--muted);font-size:0.78rem">Generating critique...</span></div>
   `;
-}
 
-async function submitMonthlyReflection() {
-  const text = document.getElementById('monthly-reflection-text').value.trim();
-  if (!text) return;
-  const btn = document.getElementById('monthly-submit-btn');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Auditing...';
-  
-  const stats = window._tempMonthlyStats;
-  const isFailure = stats.successRate < 40;
+  // Mark as recapped
+  S.lastMonthlyRecap = monthKey;
+  await saveUserSettings();
 
   if (S.groqKey) {
     try {
-      const prompt = `You are a brutally honest Strategic Advisor. Deliver a monthly performance critique. 
-Success rate: ${stats.successRate}%. 
-User's reflection: "${text}"
-
-Be brutal. Call out excuses in their reflection. What failed systematically? What must change? 4-5 sentences. Use direct language.`;
-      
-      const aiText = await callGroq([{role:'user',content:prompt}], 300, 0.85);
-      
-      document.getElementById('monthly-ai-result').innerHTML = `
-        <div class="review-ai-box" style="margin-top:16px">
-          <div class="review-ai-label">AI AUDIT</div>
-          ${isFailure ? '<div style="color:var(--red);font-weight:bold;margin-bottom:8px">⚠ STRATEGIC FAILURE DETECTED</div>' : ''}
-          ${aiText}
-        </div>
-        <button class="modal-btn-primary" style="margin-top:16px; width:100%" onclick="closeMonthlyRecap()">Acknowledge & Close</button>
-      `;
-      document.getElementById('monthly-reflection-text').disabled = true;
-      btn.style.display = 'none';
+      const pivot = isFailure ? ' THIS WAS A STRATEGIC FAILURE. Demand a hard pivot.' : '';
+      const aiText = await callGroq([{role:'user',content:`You are a ${getTerm().briefingTone}. Deliver a monthly performance critique. Month: ${monthKey}. Success rate: ${successRate}%.${pivot} Be brutal. What failed systematically? What must change? 4-5 sentences. Use ${getTerm().name} language and the term "${isFailure?'STRATEGIC FAILURE':'month review'}".`}], 280, 0.85);
+      document.getElementById('monthly-ai-text').innerHTML = '<div class="review-ai-label">AI MONTHLY CRITIQUE</div>' + aiText;
     } catch(e) {
-      document.getElementById('monthly-ai-result').innerHTML = `<em style="color:var(--red)">Audit unavailable: ${e.message}</em><br><button class="modal-btn-primary" style="margin-top:16px; width:100%" onclick="closeMonthlyRecap()">Close</button>`;
+      document.getElementById('monthly-ai-text').innerHTML = '<div class="review-ai-label">AI MONTHLY CRITIQUE</div><em style="color:var(--muted);font-size:0.78rem">Critique unavailable.</em>';
     }
-  } else {
-    document.getElementById('monthly-ai-result').innerHTML = `<button class="modal-btn-primary" style="margin-top:16px; width:100%" onclick="closeMonthlyRecap()">Close</button>`;
   }
 }
 
-async function closeMonthlyRecap() {
-  S.lastMonthlyRecap = window._tempMonthlyStats.monthKey;
-  await saveUserSettings();
-  document.getElementById('monthly-recap-modal').classList.add('hidden');
+function closeReviewModal(id) {
+  document.getElementById(id).classList.add('hidden');
 }
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (async () => {
   const {data:{session}} = await sb.auth.getSession();
-  if (session?.user) { currentUser = session.user; await initApp(); }
-  else {
+  if (session?.user) {
+    currentUser = session.user;
+    await initApp();
+  } else {
+    // Auth guard: ensure app is hidden and login screen is shown
     document.getElementById('app').style.display = 'none';
     document.getElementById('auth-screen').style.display = 'flex';
   }
