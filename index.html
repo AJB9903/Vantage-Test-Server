@@ -901,30 +901,60 @@ async function initApp() {
 async function loadUserSettings() {
   const {data} = await sb.from('user_settings').select('*').eq('user_id', currentUser.id).single();
   if (data) {
-    if (data.habits && data.habits.length) S.habits = data.habits;
+    // HARD GUARD: Supabase is always the source of truth.
+    // Never allow DEFAULT_HABITS to overwrite a returning user's saved array.
+    if (data.habits && Array.isArray(data.habits) && data.habits.length > 0) {
+      S.habits = data.habits;
+    }
+    // BLOAT GUARD: If the user has more than 5 habits but has never purchased
+    // a habit slot (multiplierCount and purchases give us the signal), truncate
+    // back to Core 5. This kills January legacy bloat.
+    // We check purchases after meta loads, so we do a post-meta pass below.
+
     if (data.goals) {
-      try { S.goals = typeof data.goals==='string' ? JSON.parse(data.goals) : data.goals; if (!Array.isArray(S.goals)) S.goals=[]; }
-      catch(e) { S.goals=[]; }
-    } else { S.goals=[]; }
-    // Load meta (new $V economy data)
+      try {
+        S.goals = typeof data.goals==='string' ? JSON.parse(data.goals) : data.goals;
+        if (!Array.isArray(S.goals)) S.goals = [];
+      } catch(e) { S.goals = []; }
+    } else { S.goals = []; }
+
     if (data.meta) {
       const meta = typeof data.meta==='string' ? JSON.parse(data.meta) : data.meta;
-      S.vBalance = meta.vBalance || 0;
-      S.lifetimeEarned = meta.lifetimeEarned || 0;
-      S.multiplierCount = meta.multiplierCount || 0;
-      S.contractSigned = meta.contractSigned || false;
+      S.vBalance          = meta.vBalance          || 0;
+      S.lifetimeEarned    = meta.lifetimeEarned    || 0;
+      S.multiplierCount   = meta.multiplierCount   || 0;
+      S.contractSigned    = meta.contractSigned    || false;
       S.hasBeenLiquidated = meta.hasBeenLiquidated || false;
-      S.recoveryNotified = meta.recoveryNotified || false;
-      S.liquidatedHabits = meta.liquidatedHabits || [];
-      S.purchases = meta.purchases || [];
-      S.goalBonusGiven = meta.goalBonusGiven || {};
-      S.habitStakes = meta.habitStakes || {};
-      S.inventory = meta.inventory || {};
-      // Purge expired buffs on load
+      S.recoveryNotified  = meta.recoveryNotified  || false;
+      S.liquidatedHabits  = meta.liquidatedHabits  || [];
+      S.purchases         = meta.purchases         || [];
+      S.goalBonusGiven    = meta.goalBonusGiven    || {};
+      S.inventory         = meta.inventory         || {};
+
+      // STAKES SYNC: always pull from meta. Fall back to DEFAULT_HABIT_STAKES
+      // so Core 5 always have correct stakes on accounts that predate this field.
+      const savedStakes = meta.habitStakes || {};
+      S.habitStakes = Object.keys(savedStakes).length > 0
+        ? savedStakes
+        : { ...DEFAULT_HABIT_STAKES };
+
+      // Purge buffs that expired (not dated today)
       const today = todayStr();
       const rawBuffs = meta.activeBuffs || {};
       S.activeBuffs = {};
       Object.entries(rawBuffs).forEach(([id, exp]) => { if (exp === today) S.activeBuffs[id] = exp; });
+
+      // BLOAT TRUNCATION: If habits array exceeds Core 5 and zero habit slots
+      // have ever been purchased, strip back to Core 5. Detects by checking
+      // whether any purchase record contains "Habit Slot" text.
+      const hasSlotPurchase = (S.purchases || []).some(p => p.item && p.item.includes('Habit Slot'));
+      if (S.habits.length > 5 && !hasSlotPurchase) {
+        S.habits = [...DEFAULT_HABITS];
+        S.habitStakes = { ...DEFAULT_HABIT_STAKES };
+      }
+    } else {
+      // No meta record yet — seed default stakes for brand-new accounts
+      S.habitStakes = { ...DEFAULT_HABIT_STAKES };
     }
   }
 }
@@ -984,6 +1014,7 @@ function showPage(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
+  if (name==='today') { renderHabitList(todayStr()); renderWeeklyGoals(); updateVDisplay(); }
   if (name==='month') { loadMonthLogs().then(renderMonthPage); }
   if (name==='calendar') { renderCalendar(); }
   if (name==='wins') { loadMonthLogs().then(renderWinsPage); }
@@ -1810,8 +1841,11 @@ async function saveHabits() {
     if (name) { newHabits.push(name); newStakes[name]=stakeInputs[i]?.value||'medium'; }
   });
   S.habits=newHabits; S.habitStakes=newStakes;
-  await saveUserSettings(); showToast('Habits & stakes saved ✓'); renderHabitsEditor();
-  renderHabitList(todayStr());
+  await saveUserSettings();
+  showToast('Habits & stakes saved ✓');
+  renderHabitsEditor();
+  // Force Today page to reflect the new habit array and stakes immediately
+  initToday(todayStr());
 }
 
 function renderGoalsEditor() {
@@ -1845,7 +1879,12 @@ async function saveGoals() {
   const dateInputs=document.querySelectorAll('[id^="gdate-"]');
   nameInputs.forEach((el,i) => { if(S.goals[i]){ S.goals[i].name=el.value.trim(); S.goals[i].deadline=dateInputs[i]?.value||''; }});
   S.goals=S.goals.filter(g=>g.name);
-  await saveUserSettings(); showToast('Goals saved ✓'); renderGoalsEditor(); renderWeeklyGoals();
+  await saveUserSettings();
+  showToast('Goals saved ✓');
+  renderGoalsEditor();
+  // Force Today page weekly goals section to sync immediately
+  renderWeeklyGoals();
+  initToday(todayStr());
 }
 async function saveGroqKey() {
   S.groqKey=document.getElementById('set-groq-key').value.trim();
@@ -1875,7 +1914,14 @@ function updateSidebar() {
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 (async () => {
   const {data:{session}} = await sb.auth.getSession();
-  if (session?.user) { currentUser=session.user; await initApp(); }
+  if (session?.user) {
+    currentUser = session.user;
+    await initApp();
+  } else {
+    // Auth guard: ensure app is hidden and login screen is shown
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
   document.getElementById('auth-password').addEventListener('keydown', e => { if(e.key==='Enter') handleAuth(); });
   document.getElementById('auth-email').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('auth-password').focus(); });
 })();
