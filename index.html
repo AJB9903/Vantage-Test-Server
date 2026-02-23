@@ -1804,19 +1804,46 @@ function updateSidebar() {
 }
 
 // ─── GROQ API ─────────────────────────────────────────────────────────────────
-async function callGroq(messages, maxTokens=500, temperature=0.7) {
-  if (!S.groqKey) throw new Error('No Groq API key configured.');
-  const body = JSON.stringify({ model: 'llama-3.1-8b-instant', messages, max_tokens: maxTokens, temperature });
-  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + S.groqKey };
-  let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers, body });
-  if (res.status === 429) {
-    await new Promise(r => setTimeout(r, 2000));
-    res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers, body });
-    if (res.status === 429) throw new Error('Rate limit exceeded. Try again in a moment.');
+async function callGroq(messages, maxTokens = 500, temperature = 0.7) {
+  const key = S.groqKey || localStorage.getItem('groq_key');
+  if (!key) throw new Error('No Groq API key configured.');
+
+  const body = JSON.stringify({
+    // UPDATED MODEL SPEC
+    model: 'llama-3.1-8b-instant', 
+    messages,
+    max_tokens: maxTokens,
+    temperature
+  });
+
+  const headers = { 
+    'Content-Type': 'application/json', 
+    'Authorization': 'Bearer ' + key.trim() 
+  };
+
+  try {
+    let res = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
+      method: 'POST', 
+      headers, 
+      body 
+    });
+
+    if (res.status === 401) throw new Error('Invalid API Key. Check your Groq console.');
+    if (res.status === 404) throw new Error('Model not found. Update Model ID to llama-3.1-8b-instant.');
+    if (res.status === 429) {
+      showToast('Rate limit hit. Retrying...', 2000, true);
+      await new Promise(r => setTimeout(r, 2000));
+      // Single retry attempt
+      res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers, body });
+    }
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.choices[0].message.content.trim();
+  } catch (e) {
+    console.error('Groq API Failure:', e);
+    throw e;
   }
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data.choices[0].message.content.trim();
 }
 
 // ─── INITIALIZATION MODAL (REPLACES COMMISSIONING) ────────────────────────────
