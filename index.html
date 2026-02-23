@@ -723,7 +723,7 @@ function renderStatusTag() {
   const el = document.getElementById('today-status-tag');
   if (!el) return;
   if (!S.contractSigned) {
-    el.innerHTML = '<span class="status-tag status-pre">STATUS: PRE-CONSTRUCTION (PROBATIONARY)</span>';
+    el.innerHTML = '<span class="status-tag status-pre">STATUS: PROBATIONARY</span>';
   } else if (S.vBalance === 0) {
     el.innerHTML = '<span class="status-tag status-insolvent">STATUS: INSOLVENT</span>';
   } else {
