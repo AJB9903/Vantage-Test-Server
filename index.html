@@ -374,7 +374,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="user-badge"><div class="user-email" id="sidebar-email"></div></div>
       <div class="month-badge"><strong id="sidebar-month"></strong><span id="sidebar-day"></span></div>
       <div style="font-family:'Space Mono',monospace;font-size:0.7rem;color:var(--accent);text-align:center;margin-top:8px;padding:6px;background:rgba(223,255,0,0.04);border:1px solid rgba(223,255,0,0.15);border-radius:6px" id="sidebar-balance">$V 0</div>
-      <div class="archetype-badge" id="sidebar-archetype" style="text-align:center;margin-top:4px"></div>
       <button class="logout-btn" onclick="handleLogout()">Sign out</button>
     </div>
   </aside>
@@ -529,16 +528,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <div><div class="page-title">Settings<span>.</span></div><div class="page-sub">Customize your tracker</div></div>
       </div>
       <div class="settings-section">
-        <div class="settings-title">Operating Archetype</div>
-        <p style="font-size:0.73rem;color:var(--muted);margin-bottom:10px;line-height:1.6">Changes the language of your entire OS — $V labels, store items, and AI feedback tone.</p>
-        <select class="inp" id="set-archetype" style="width:100%;max-width:300px" onchange="changeArchetype(this.value)">
-          <option value="builder">🏗️ The Builder</option>
-          <option value="founder">🚀 The Founder</option>
-          <option value="operator">⚙️ The Operator</option>
-          <option value="sovereign">👑 The Sovereign</option>
-        </select>
-      </div>
-      <div class="settings-section">
         <div class="settings-title">Current Month</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <select class="inp" id="set-month" style="width:auto">
@@ -593,94 +582,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   </main>
 </div>
 
-<!-- ═══ ONBOARDING MODAL ═══════════════════════════════════════════ -->
-<div class="modal-overlay" id="onboarding-modal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">COMMISSIONING<span>.</span></div>
-      <div class="modal-sub" id="ob-step-label">Step 1 of 3 — API Key</div>
-      <div class="modal-step-indicator">
-        <div class="modal-step-dot active" id="ob-dot-1"></div>
-        <div class="modal-step-dot" id="ob-dot-2"></div>
-        <div class="modal-step-dot" id="ob-dot-3"></div>
-      </div>
-    </div>
-    <div class="modal-body">
-      <!-- Step 1: API Key -->
-      <div id="ob-step-1">
-        <span class="modal-label">Groq API Key — Required</span>
-        <p class="modal-hint">Go to <strong style="color:var(--text)">console.groq.com</strong> → API Keys → Create key. This is free and powers your AI General Contractor. Without it, the system cannot generate your custom Site Plan.</p>
-        <input type="password" class="inp" id="ob-groq-key" placeholder="gsk_..."/>
-        <div id="ob-step1-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:6px"></div>
-        <div class="modal-actions">
-          <button class="modal-btn-primary" onclick="obNext(1)">Continue → Archetype Selection</button>
-        </div>
-      </div>
-      <!-- Step 2: Archetype -->
-      <div id="ob-step-2" style="display:none">
-        <span class="modal-label">Select Your Operating Archetype</span>
-        <p class="modal-hint">Your Archetype defines the language of your OS, the framing of your $V economy, and how the AI addresses your performance data.</p>
-        <div class="archetype-grid" id="archetype-selector">
-          <div class="archetype-card" data-arch="builder" onclick="selectArchetype(this,'builder')">
-            <div class="archetype-icon">🏗️</div>
-            <div class="archetype-name">The Builder</div>
-            <div class="archetype-tagline">Site Profit · Liquidated Damages · % Mobilized</div>
-          </div>
-          <div class="archetype-card" data-arch="founder" onclick="selectArchetype(this,'founder')">
-            <div class="archetype-icon">🚀</div>
-            <div class="archetype-name">The Founder</div>
-            <div class="archetype-tagline">Growth Metric · Burn Rate · % to Series A</div>
-          </div>
-          <div class="archetype-card" data-arch="operator" onclick="selectArchetype(this,'operator')">
-            <div class="archetype-icon">⚙️</div>
-            <div class="archetype-name">The Operator</div>
-            <div class="archetype-tagline">System Uptime · SLA Breach · % Efficiency</div>
-          </div>
-          <div class="archetype-card" data-arch="sovereign" onclick="selectArchetype(this,'sovereign')">
-            <div class="archetype-icon">👑</div>
-            <div class="archetype-name">The Sovereign</div>
-            <div class="archetype-tagline">Legacy Gain · Territory Loss · % Sovereignty</div>
-          </div>
-        </div>
-        <div id="ob-step2-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:8px"></div>
-        <div class="modal-actions">
-          <button class="modal-btn-secondary" onclick="obBack(2)">← Back</button>
-          <button class="modal-btn-primary" onclick="obNext(2)">Continue → Site Survey</button>
-        </div>
-      </div>
-      <!-- Step 3: Site Survey -->
-      <div id="ob-step-3" style="display:none">
-        <span class="modal-label">Site Survey — 4 Questions</span>
-        <p class="modal-hint">Your answers are sent to the AI to generate a custom Site Plan: 5 habits, 2 weekly goals, and 1 monthly goal tailored to your archetype.</p>
-        <div class="survey-field">
-          <label class="modal-label">Objective — Primary build/scale target?</label>
-          <textarea class="inp" id="survey-q1" rows="2" placeholder="e.g. Launch MVP by Q2, hit $10k MRR..."></textarea>
-        </div>
-        <div class="survey-field">
-          <label class="modal-label">Risk — Your 'Anti-Self' behavior (the leak)?</label>
-          <textarea class="inp" id="survey-q2" rows="2" placeholder="e.g. I self-sabotage by distraction when progress gets real..."></textarea>
-        </div>
-        <div class="survey-field">
-          <label class="modal-label">Capital — What keeps you solvent?</label>
-          <textarea class="inp" id="survey-q3" rows="2" placeholder="e.g. Proving to myself I can execute consistently..."></textarea>
-        </div>
-        <div class="survey-field">
-          <label class="modal-label">Transparency — What are you avoiding being honest about?</label>
-          <textarea class="inp" id="survey-q4" rows="2" placeholder="e.g. That I haven't been training consistently for months..."></textarea>
-        </div>
-        <div id="ob-step3-err" style="color:var(--red);font-size:0.72rem;font-family:'Space Mono',monospace;min-height:18px;margin-top:4px"></div>
-        <div id="ob-generating" style="display:none;font-family:'Space Mono',monospace;font-size:0.72rem;color:var(--accent2);padding:12px;background:#001a10;border:1px solid #1a3a2a;border-radius:8px;margin-top:12px">
-          <span class="spinner"></span>AI General Contractor generating your Site Plan...
-        </div>
-        <div class="modal-actions">
-          <button class="modal-btn-secondary" onclick="obBack(3)">← Back</button>
-          <button class="modal-btn-primary" id="ob-generate-btn" onclick="initializeSitePlan()">Generate Site Plan →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ═══ WEEKLY REVIEW MODAL ══════════════════════════════════════════ -->
 <div class="modal-overlay hidden" id="weekly-review-modal">
   <div class="modal-box wide">
@@ -723,68 +624,7 @@ const STAKES = {
   high:     { earn: 100, penalty: 300,  label: 'HIGH', cls: 'stake-high' },
   critical: { earn: 250, penalty: 1000, label: 'CRIT', cls: 'stake-crit' }
 };
-
-
-// ─── ARCHETYPE TERMINOLOGY ────────────────────────────────────────────────────
-const TERMINOLOGY = {
-  builder: {
-    name: 'The Builder',
-    icon: '🏗️',
-    profitLabel: 'Site Profit',
-    lossLabel: 'Liquidated Damages',
-    progressLabel: '% Mobilized',
-    briefingTone: 'construction site general contractor. Use terms like site margin, mobilization, build schedule, liquidated damages, and project status.',
-    rewards: [
-      { id: 'fuel_upgrade',      name: 'Fuel Upgrade',       emoji: '⚡' },
-      { id: 'stakeholder_bonus', name: 'Stakeholder Dinner',  emoji: '🥂' },
-      { id: 'solo_trip',         name: 'Solo Recon Trip',     emoji: '✈️' },
-    ]
-  },
-  founder: {
-    name: 'The Founder',
-    icon: '🚀',
-    profitLabel: 'Growth Metric',
-    lossLabel: 'Burn Rate',
-    progressLabel: '% to Series A',
-    briefingTone: 'ruthless startup advisor. Use terms like burn rate, runway, growth velocity, product-market fit, and investor pressure.',
-    rewards: [
-      { id: 'unfiltered_hour',   name: 'Deep Work Sprint',         emoji: '🧠' },
-      { id: 'stakeholder_bonus', name: 'Investor Networking',       emoji: '🤝' },
-      { id: 'solo_trip',         name: 'Product Launch Offsite',    emoji: '🚀' },
-    ]
-  },
-  operator: {
-    name: 'The Operator',
-    icon: '⚙️',
-    profitLabel: 'System Uptime',
-    lossLabel: 'SLA Breach',
-    progressLabel: '% Efficiency',
-    briefingTone: 'high-stakes operations director. Use terms like SLA compliance, system uptime, capacity, throughput, and process efficiency.',
-    rewards: [
-      { id: 'fuel_upgrade',      name: 'System Patch',          emoji: '🔧' },
-      { id: 'performance_tech',  name: 'Capacity Expansion',    emoji: '📈' },
-      { id: 'deep_work_env',     name: 'Global Infrastructure', emoji: '🌐' },
-    ]
-  },
-  sovereign: {
-    name: 'The Sovereign',
-    icon: '👑',
-    profitLabel: 'Legacy Gain',
-    lossLabel: 'Territory Loss',
-    progressLabel: '% Sovereignty',
-    briefingTone: 'sovereign legacy advisor. Use terms like territory, legacy capital, sphere of influence, dominion, and long-game positioning.',
-    rewards: [
-      { id: 'unfiltered_hour',   name: 'Freedom Token',       emoji: '🕊️' },
-      { id: 'solo_trip',         name: 'Territory Expansion',  emoji: '🗺️' },
-      { id: 'deep_work_env',     name: 'Legacy Retreat',       emoji: '🏰' },
-    ]
-  }
-};
-function getTerm() { return TERMINOLOGY[S.archetype] || TERMINOLOGY.builder; }
-
 // ─── STORE ITEMS ──────────────────────────────────────────────────────────────
-// consumable = goes to inventory, activatable with USE button
-// infra/large = permanent one-time effects
 const BASE_STORE_ITEMS = [
   { id: 'unfiltered_hour', name: 'Unfiltered Hour', desc: '60 mins of guilt-free dopamine. No tracking, no accountability.', basePrice: 500, tier: 'consumable', emoji: '🎮', buffLabel: 'UNFILTERED HOUR ACTIVE', buffColor: '#f472b6' },
   { id: 'fuel_upgrade', name: 'Fuel Upgrade', desc: 'Unlocks a premium meal or high-performance caffeine protocol.', basePrice: 750, tier: 'consumable', emoji: '⚡', buffLabel: 'FUEL PROTOCOL ACTIVE', buffColor: '#fbbf24' },
@@ -817,12 +657,7 @@ let S = {
   goals: [],
   groqKey: '',
   days: {},
-  // Identity
-  archetype: 'builder',         // builder | founder | operator | sovereign
-  onboardingComplete: false,    // false = show commissioning modal
-  lastWeeklyReview: null,       // ISO date string
-  lastMonthlyRecap: null,       // ISO date string
-  // $V Economy
+  onboardingComplete: true,
   vBalance: 0,
   lifetimeEarned: 0,
   multiplierCount: 0,
@@ -832,7 +667,8 @@ let S = {
   liquidatedHabits: [],
   purchases: [],
   goalBonusGiven: {},
-  // Inventory system
+  lastWeeklyReview: null,
+  lastMonthlyRecap: null,
   inventory: {},
   activeBuffs: {},
 };
@@ -854,6 +690,7 @@ function triggerAutoSaveDay() {
     setTimeout(() => el.classList.remove('visible'), 2000);
   }, 1000);
 }
+
 function triggerAutoSaveCalDay() {
   const el = document.getElementById('cal-auto-save-status');
   el.textContent = 'Saving...'; el.classList.remove('success'); el.classList.add('visible');
@@ -1133,17 +970,10 @@ async function initApp() {
   await checkNewDay();
   updateSidebar();
   updateVDisplay();
-  updateArchetypeUI();
   initToday(todayStr());
   calViewMonth = S.month; calViewYear = S.year;
   setupEodTimer();
-  // Commissioning: show onboarding for new users
-  if (!S.onboardingComplete) {
-    showOnboarding();
-  } else {
-    // Temporal reviews for returning users
-    checkTemporalReviews();
-  }
+  checkTemporalReviews();
 }
 
 // ─── SUPABASE DATA ────────────────────────────────────────────────────────────
@@ -1170,8 +1000,6 @@ async function loadUserSettings() {
     if (data.meta) {
       const meta = typeof data.meta==='string' ? JSON.parse(data.meta) : data.meta;
       S.vBalance          = meta.vBalance          || 0;
-      S.archetype         = meta.archetype         || 'builder';
-      S.onboardingComplete= meta.onboardingComplete|| false;
       S.lastWeeklyReview  = meta.lastWeeklyReview  || null;
       S.lastMonthlyRecap  = meta.lastMonthlyRecap  || null;
       S.lifetimeEarned    = meta.lifetimeEarned    || 0;
@@ -1215,8 +1043,6 @@ async function loadUserSettings() {
 async function saveUserSettings() {
   const meta = {
     vBalance: S.vBalance || 0,
-    archetype: S.archetype || 'builder',
-    onboardingComplete: S.onboardingComplete || false,
     lastWeeklyReview: S.lastWeeklyReview || null,
     lastMonthlyRecap: S.lastMonthlyRecap || null,
     lifetimeEarned: S.lifetimeEarned || 0,
@@ -1407,9 +1233,8 @@ async function generateBriefing() {
   const weeklyGoals = S.goals.filter(g => g.type==='weekly').map(g => `${g.name} @ ${g.progress||0}/10`).join(', ') || 'none set';
   const potentialToday = S.habits.reduce((acc, h) => acc + getStakeEarn(S.habitStakes[h] || 'medium'), 0);
 
-  const term = getTerm();
-  const prompt = `You are VANTAGE AI — a ${term.briefingTone}.
-Generate a 2-3 sentence "Project Briefing" for the start of today using ${term.name} language.
+  const prompt = `You are VANTAGE AI, a brutally honest performance advisor built for high-stakes execution.
+Generate a 2-3 sentence "Project Briefing" for the start of today.
 
 Yesterday's data:
 - Habits completed: ${doneHabits.length}/${S.habits.length} — ${doneHabits.join(', ') || 'NONE'}
@@ -1552,8 +1377,7 @@ async function getAIFeedback() {
   const monthlyGoals = S.goals.filter(g=>g.type==='monthly').map(g=>`${g.name} (${g.progress||0}/10)`).join(', ')||'none';
   const urgentGoals = S.goals.filter(g=>{ const u=getUrgency(g.deadline); return u.level>=2; }).map(g=>{ const u=getUrgency(g.deadline); return `${g.name} (${u.label})`; }).join(', ')||'none';
 
-  const term = getTerm();
-  const prompt = `You are VANTAGE AI — a ${term.briefingTone}. Be direct, specific, brutal. Use ${term.name} language and terminology. Max 160 words.
+  const prompt = `You are VANTAGE AI, a no-BS performance advisor. Be direct, specific, brutal. Max 160 words.
 Today's data:
 - Mood: ${mood}/10 | Sleep: ${sleep||'?'}h | Cals: ${cals||'?'} | Protein: ${prot||'?'}g | Weight: ${weight||'?'} lbs
 - Habits done (${doneHabits.length}/${S.habits.length}): ${doneHabits.join(', ')||'none'}
@@ -2021,8 +1845,6 @@ function renderSettings() {
   document.getElementById('set-month').value=S.month;
   document.getElementById('set-year').value=S.year;
   document.getElementById('set-groq-key').value=S.groqKey||'';
-  const archEl = document.getElementById('set-archetype');
-  if (archEl) archEl.value = S.archetype || 'builder';
   renderHabitsEditor();
   renderGoalsEditor();
   renderEconomyStatus();
@@ -2160,24 +1982,6 @@ function updateSidebar() {
 }
 
 
-// ─── ARCHETYPE UI ─────────────────────────────────────────────────────────────
-function updateArchetypeUI() {
-  const term = getTerm();
-  const badge = document.getElementById('sidebar-archetype');
-  if (badge) badge.textContent = term.icon + ' ' + term.name.toUpperCase();
-  const archEl = document.getElementById('set-archetype');
-  if (archEl) archEl.value = S.archetype || 'builder';
-}
-
-async function changeArchetype(val) {
-  S.archetype = val;
-  await saveUserSettings();
-  updateArchetypeUI();
-  renderStorePage();
-  renderHabitList(todayStr());
-  showToast(`⚡ Archetype switched to ${getTerm().name}`);
-}
-
 // ─── GROQ API WITH RETRY ──────────────────────────────────────────────────────
 async function callGroq(messages, maxTokens=500, temperature=0.8) {
   if (!S.groqKey) throw new Error('No Groq API key configured.');
@@ -2198,138 +2002,6 @@ async function callGroq(messages, maxTokens=500, temperature=0.8) {
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
   return data.choices[0].message.content.trim();
-}
-
-// ─── ONBOARDING ───────────────────────────────────────────────────────────────
-let obSelectedArchetype = 'builder';
-
-function showOnboarding() {
-  document.getElementById('onboarding-modal').classList.remove('hidden');
-  obStep(1);
-}
-
-function obStep(n) {
-  [1,2,3].forEach(i => {
-    document.getElementById('ob-step-' + i).style.display = i===n ? 'block' : 'none';
-    const dot = document.getElementById('ob-dot-' + i);
-    dot.className = 'modal-step-dot' + (i<n ? ' done' : i===n ? ' active' : '');
-  });
-  const labels = ['Step 1 of 3 — API Key','Step 2 of 3 — Archetype','Step 3 of 3 — Site Survey'];
-  document.getElementById('ob-step-label').textContent = labels[n-1];
-}
-
-function obNext(step) {
-  if (step === 1) {
-    const key = document.getElementById('ob-groq-key').value.trim();
-    if (!key || !key.startsWith('gsk_')) {
-      document.getElementById('ob-step1-err').textContent = '⚠ Enter a valid Groq key starting with gsk_';
-      return;
-    }
-    S.groqKey = key;
-    localStorage.setItem('groq_key', key);
-    document.getElementById('ob-step1-err').textContent = '';
-    obStep(2);
-  } else if (step === 2) {
-    if (!obSelectedArchetype) {
-      document.getElementById('ob-step2-err').textContent = '⚠ Select an archetype to continue.';
-      return;
-    }
-    S.archetype = obSelectedArchetype;
-    document.getElementById('ob-step2-err').textContent = '';
-    obStep(3);
-  }
-}
-
-function obBack(step) { obStep(step - 1); }
-
-function selectArchetype(el, arch) {
-  document.querySelectorAll('.archetype-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  obSelectedArchetype = arch;
-}
-
-async function initializeSitePlan() {
-  const q1 = document.getElementById('survey-q1').value.trim();
-  const q2 = document.getElementById('survey-q2').value.trim();
-  const q3 = document.getElementById('survey-q3').value.trim();
-  const q4 = document.getElementById('survey-q4').value.trim();
-  if (!q1 || !q2 || !q3 || !q4) {
-    document.getElementById('ob-step3-err').textContent = '⚠ All 4 fields are required.';
-    return;
-  }
-  document.getElementById('ob-step3-err').textContent = '';
-  document.getElementById('ob-generate-btn').disabled = true;
-  document.getElementById('ob-generating').style.display = 'block';
-
-  const term = TERMINOLOGY[S.archetype] || TERMINOLOGY.builder;
-  const prompt = `You are a ${term.briefingTone}. A new operator has completed their Site Survey. Generate their custom performance plan.
-
-ARCHETYPE: ${term.name}
-SURVEY ANSWERS:
-- Primary Objective: ${q1}
-- Anti-Self / Leak: ${q2}
-- Capital Motivation: ${q3}
-- Transparency Gap: ${q4}
-
-Return ONLY a valid JSON object with this exact structure (no markdown, no extra text):
-{
-  "habits": [
-    {"name": "habit name", "stake": "low|medium|high|critical"},
-    {"name": "habit name", "stake": "low|medium|high|critical"},
-    {"name": "habit name", "stake": "low|medium|high|critical"},
-    {"name": "habit name", "stake": "low|medium|high|critical"},
-    {"name": "habit name", "stake": "low|medium|high|critical"}
-  ],
-  "weeklyGoals": [
-    {"name": "weekly goal 1"},
-    {"name": "weekly goal 2"}
-  ],
-  "monthlyGoal": {"name": "monthly goal"},
-  "briefing": "A 2-sentence opening briefing to this operator using ${term.name} language and terminology."
-}
-
-Rules: Use ${term.name} vocabulary. Stakes must reflect importance (critical = non-negotiable). Habits should address their anti-self behavior and objective.`;
-
-  try {
-    const raw = await callGroq([{role:'user', content: prompt}], 800, 0.85);
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const plan = JSON.parse(clean);
-
-    // Apply the generated habits
-    S.habits = plan.habits.map(h => h.name);
-    S.habitStakes = {};
-    plan.habits.forEach(h => { S.habitStakes[h.name] = h.stake; });
-
-    // Apply goals
-    S.goals = [];
-    if (plan.weeklyGoals) {
-      plan.weeklyGoals.forEach(g => {
-        S.goals.push({ id: 'g_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), name: g.name, type: 'weekly', deadline: '', progress: 0 });
-      });
-    }
-    if (plan.monthlyGoal) {
-      S.goals.push({ id: 'g_'+Date.now()+'_mx', name: plan.monthlyGoal.name, type: 'monthly', deadline: '', progress: 0 });
-    }
-
-    // Store briefing
-    if (plan.briefing) {
-      localStorage.setItem('vantage_briefing_' + todayStr(), plan.briefing);
-    }
-
-    S.onboardingComplete = true;
-    await saveUserSettings();
-
-    document.getElementById('onboarding-modal').classList.add('hidden');
-    updateArchetypeUI();
-    renderHabitList(todayStr());
-    renderWeeklyGoals();
-    showToast('⚡ Site Plan commissioned. ' + term.name + ' OS activated.');
-    checkTemporalReviews();
-  } catch(e) {
-    document.getElementById('ob-step3-err').textContent = '⚠ AI error: ' + e.message + '. Check your Groq key.';
-    document.getElementById('ob-generate-btn').disabled = false;
-    document.getElementById('ob-generating').style.display = 'none';
-  }
 }
 
 // ─── TEMPORAL REVIEWS ─────────────────────────────────────────────────────────
@@ -2385,7 +2057,6 @@ async function showWeeklyReview() {
     return a + S.habits.filter(h => (S.days[d.dk]||{habits:{}}).habits[h]).reduce((s, h) => s + (STAKES[S.habitStakes[h]||'medium']?.earn || 40), 0);
   }, 0);
 
-  const term = getTerm();
   const DAYS_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   // Heatmap HTML
@@ -2408,8 +2079,8 @@ async function showWeeklyReview() {
 
   body.innerHTML = `
     <div class="review-stat-row">
-      <div class="review-stat"><div class="review-stat-label">${term.progressLabel}</div><div class="review-stat-val" style="color:${successRate>=80?'var(--green)':successRate>=50?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
-      <div class="review-stat"><div class="review-stat-label">${term.profitLabel}</div><div class="review-stat-val" style="color:var(--accent)">+$V ${weekEarned.toLocaleString()}</div></div>
+      <div class="review-stat"><div class="review-stat-label">% Completion</div><div class="review-stat-val" style="color:${successRate>=80?'var(--green)':successRate>=50?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
+      <div class="review-stat"><div class="review-stat-label">$V Earned</div><div class="review-stat-val" style="color:var(--accent)">+$V ${weekEarned.toLocaleString()}</div></div>
       <div class="review-stat"><div class="review-stat-label">Avg Sleep</div><div class="review-stat-val" style="color:var(--blue)">${avgSleep.toFixed(1)}h</div></div>
       <div class="review-stat"><div class="review-stat-label">Avg Mood</div><div class="review-stat-val" style="color:var(--pink)">${avgMood.toFixed(1)}</div></div>
     </div>
@@ -2456,7 +2127,7 @@ async function showMonthlyRecap(monthKey) {
   body.innerHTML = `
     ${isFailure ? '<div class="failure-banner">⚠ STRATEGIC FAILURE — ' + successRate + '% EXECUTION — PIVOT REQUIRED</div>' : ''}
     <div class="review-stat-row">
-      <div class="review-stat"><div class="review-stat-label">Monthly ${term.progressLabel}</div><div class="review-stat-val" style="color:${successRate>=70?'var(--green)':successRate>=40?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
+      <div class="review-stat"><div class="review-stat-label">Monthly % Completion</div><div class="review-stat-val" style="color:${successRate>=70?'var(--green)':successRate>=40?'var(--yellow)':'var(--red)'}">${successRate}%</div></div>
       <div class="review-stat"><div class="review-stat-label">Days Tracked</div><div class="review-stat-val">${dim}</div></div>
     </div>
     <div class="review-ai-box" id="monthly-ai-text"><div class="review-ai-label">AI MONTHLY CRITIQUE</div><span style="color:var(--muted);font-size:0.78rem">Generating critique...</span></div>
@@ -2469,7 +2140,7 @@ async function showMonthlyRecap(monthKey) {
   if (S.groqKey) {
     try {
       const pivot = isFailure ? ' THIS WAS A STRATEGIC FAILURE. Demand a hard pivot.' : '';
-      const aiText = await callGroq([{role:'user',content:`You are a ${getTerm().briefingTone}. Deliver a monthly performance critique. Month: ${monthKey}. Success rate: ${successRate}%.${pivot} Be brutal. What failed systematically? What must change? 4-5 sentences. Use ${getTerm().name} language and the term "${isFailure?'STRATEGIC FAILURE':'month review'}".`}], 280, 0.85);
+      const aiText = await callGroq([{role:'user',content:`You are a brutally honest performance advisor. Deliver a monthly performance critique. Month: ${monthKey}. Success rate: ${successRate}%.${pivot} Be brutal. What failed systematically? What must change? 4-5 sentences.`}], 280, 0.85);
       document.getElementById('monthly-ai-text').innerHTML = '<div class="review-ai-label">AI MONTHLY CRITIQUE</div>' + aiText;
     } catch(e) {
       document.getElementById('monthly-ai-text').innerHTML = '<div class="review-ai-label">AI MONTHLY CRITIQUE</div><em style="color:var(--muted);font-size:0.78rem">Critique unavailable.</em>';
